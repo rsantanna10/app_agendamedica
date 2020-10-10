@@ -13,9 +13,6 @@ import {
   makeStyles,
   useTheme
 } from '@material-ui/core';
-import LaptopMacIcon from '@material-ui/icons/LaptopMac';
-import PhoneIcon from '@material-ui/icons/Phone';
-import TabletIcon from '@material-ui/icons/Tablet';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -33,15 +30,15 @@ const TrafficByDevice = ({ className, ...rest }) => {
         data: [63, 15, 22],
         backgroundColor: [
           colors.indigo[500],
-          colors.red[600],
-          colors.orange[600]
+          colors.orange[600],
+          colors.red[600]
         ],
         borderWidth: 8,
         borderColor: colors.common.white,
         hoverBorderColor: colors.common.white
       }
     ],
-    labels: ['Desktop', 'Tablet', 'Mobile']
+    labels: ['Agendamentos', 'Reagendamentos', 'Cancelamentos']
   };
 
   const options = {
@@ -68,22 +65,19 @@ const TrafficByDevice = ({ className, ...rest }) => {
 
   const devices = [
     {
-      title: 'Desktop',
+      title: 'Agendamentos',
       value: 63,
-      icon: LaptopMacIcon,
       color: colors.indigo[500]
     },
     {
-      title: 'Tablet',
+      title: 'Reagendamentos',
       value: 15,
-      icon: TabletIcon,
-      color: colors.red[600]
+      color: colors.orange[600]      
     },
     {
-      title: 'Mobile',
+      title: 'Cancelamentos',
       value: 23,
-      icon: PhoneIcon,
-      color: colors.orange[600]
+      color: colors.red[600]      
     }
   ];
 
@@ -92,7 +86,7 @@ const TrafficByDevice = ({ className, ...rest }) => {
       className={clsx(classes.root, className)}
       {...rest}
     >
-      <CardHeader title="Traffic by Device" />
+      <CardHeader title="Agendamentos X Reagendamentos X Cancel." />
       <Divider />
       <CardContent>
         <Box
@@ -111,7 +105,6 @@ const TrafficByDevice = ({ className, ...rest }) => {
         >
           {devices.map(({
             color,
-            icon: Icon,
             title,
             value
           }) => (
@@ -120,7 +113,6 @@ const TrafficByDevice = ({ className, ...rest }) => {
               p={1}
               textAlign="center"
             >
-              <Icon color="action" />
               <Typography
                 color="textPrimary"
                 variant="body1"

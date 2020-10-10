@@ -62,7 +62,8 @@ const Results = ({ onEdit, className, consultationTypes, ...rest }) => {
                   <TableCell>{consultationType.descricao}</TableCell>
                   <TableCell  align="right" width="30%">
                     <IconButton onClick={() => onEdit(consultationType)}><EditIcon color="primary" /></IconButton>|
-                    <IconButton onClick={() => handleDelete(consultationType.id)}><DeleteIcon color="secondary"/></IconButton></TableCell>                
+                    <IconButton onClick={() => handleDelete(consultationType.id)}><DeleteIcon color="secondary"/></IconButton>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

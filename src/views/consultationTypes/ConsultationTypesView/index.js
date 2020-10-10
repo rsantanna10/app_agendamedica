@@ -25,7 +25,7 @@ const SpecialtyType = () => {
   const [consultationTypes] = useState(data);
   const childRef = useRef();
 
-  const onSubmit = () => {
+  const onResetForm = () => {
     childRef.current.handleResetForm();
   }
 
@@ -37,7 +37,7 @@ const SpecialtyType = () => {
     <Page className={classes.root} title="Tipo de Consulta">
       <Container maxWidth="lg">
         <Box display="flex" justifyContent="flex-end" >
-          <Button color="primary" variant="contained" onClick={onSubmit}>Adicionar Tipo</Button>
+          <Button color="primary" variant="contained" onClick={onResetForm}>Adicionar Tipo</Button>
         </Box>
         <br></br>
         <Grid container spacing={3}>
