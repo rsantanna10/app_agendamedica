@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useImperativeHandle, forwardRef } from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import {
@@ -17,14 +17,26 @@ import {
   RadioGroup,
   Radio
 } from '@material-ui/core';
+import api from '../../../utils/api';
+import MessageDiaglog from '../../../components/MessageDialog';
 
 const useStyles = makeStyles(() => ({
   root: {}
 }));
 
-const ProfileDetails = ({ className, ...rest }) => {
+const ProfileDetails = forwardRef(({ className, getPacientes, ...rest }, ref) => {
+  const pacienteDefault = { 
+    usuarioId: 1,
+    nome: '',
+    cpf: '',
+    dataNascimento: '',
+    sexo: null,
+    email: ''
+  };
+  
   const classes = useStyles();
-  const [values, setValues] = useState({});
+  const [values, setValues] = useState(pacienteDefault);
+  const childRef = useRef();  
 
   const handleChange = (event) => {
     setValues({
@@ -32,6 +44,32 @@ const ProfileDetails = ({ className, ...rest }) => {
       [event.target.name]: event.target.value
     });
   };
+
+  const onSubmit = async () => {
+    
+    if(values.id === undefined) { 
+      await api.post('/paciente', values);
+      childRef.current.handleOpenMessage('Paciente cadastrado com sucesso!', 'success');
+    } else {
+      await api.patch('/paciente/' + values.id, values);
+      childRef.current.handleOpenMessage('Paciente atualizado com sucesso!', 'success');
+    }
+    getPacientes();
+    setValues(pacienteDefault);
+  }
+  
+  useImperativeHandle(ref, () => ({
+
+    handleResetForm() {
+      setValues(pacienteDefault);
+    },
+    handleSetValues(values) {
+      setValues({
+        ...values,
+      });
+    }
+
+  }));
 
   return (
     <form
@@ -46,7 +84,12 @@ const ProfileDetails = ({ className, ...rest }) => {
         <CardContent>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="CPF" name="cpf" onChange={handleChange} required value={values.nome} variant="outlined" />
+              <TextField fullWidth label="CPF" name="cpf" onChange={handleChange} required value={values.cpf} variant="outlined" />
+            </Grid>            
+          </Grid>
+          <Grid container spacing={3}>
+            <Grid item md={12} xs={12} >
+              <TextField fullWidth label="Nome" name="nome" onChange={handleChange} required value={values.nome} variant="outlined" />
             </Grid>            
           </Grid>
           <Grid container spacing={3}>
@@ -56,7 +99,7 @@ const ProfileDetails = ({ className, ...rest }) => {
                 type="date" 
                 onChange={handleChange} 
                 required 
-                value={values.tipoEspecialidade} 
+                value={values.dataNascimento} 
                 variant="outlined"  
                 InputLabelProps={{
                   shrink: true,
@@ -68,7 +111,7 @@ const ProfileDetails = ({ className, ...rest }) => {
             <Grid item md={12} xs={12} >
             <FormControl component="fieldset">
               <FormLabel component="legend">Sexo</FormLabel>
-              <RadioGroup aria-label="Sexo" name="sexo" value={''} onChange={handleChange}>
+              <RadioGroup aria-label="Sexo" name="sexo" value={values.sexo} onChange={handleChange}>
                 <FormControlLabel value="M" control={<Radio />} label="Masculino" />
                 <FormControlLabel value="F" control={<Radio />} label="Feminino" />
               </RadioGroup>
@@ -77,26 +120,28 @@ const ProfileDetails = ({ className, ...rest }) => {
           </Grid>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="E-mail" name="email" onChange={handleChange} required  variant="outlined" />
+              <TextField fullWidth label="E-mail" name="email" value={values.email} onChange={handleChange} required  variant="outlined" />
             </Grid>            
           </Grid>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="Celular" name="celular" onChange={handleChange}  required variant="outlined" />
+              <TextField fullWidth label="Celular" name="celular" value={values.celular} onChange={handleChange}  required variant="outlined" />
             </Grid>            
           </Grid>
         </CardContent>
         <Divider />
         <Box display="flex" justifyContent="flex-end" p={2} >
-          <Button color="primary" variant="contained">Gravar</Button>
+          <Button color="primary" variant="contained" onClick={onSubmit}>Gravar</Button>
         </Box>
       </Card>
+      <MessageDiaglog ref={childRef} />
     </form>
   );
-};
+});
 
 ProfileDetails.propTypes = {
-  className: PropTypes.string
+  className: PropTypes.string,
+  getPacientes: PropTypes.func
 };
 
 export default ProfileDetails;

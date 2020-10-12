@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Button,
@@ -9,7 +9,7 @@ import {
 import Page from 'src/components/Page';
 import Results from './Results';
 import Details from './Details';
-import data from './data';
+import api from '../../../utils/api';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,23 +20,42 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const SpecialtyType = () => {
+
+const Paciente = () => {
   const classes = useStyles();
-  const [users] = useState(data);
+  const [pacients, setPacients] = useState([]);
+  const childRef = useRef();
+
+  useEffect(() => {
+    getPacientes();
+  }, []);
+
+  const getPacientes = async() => {
+    const response = await api.get('/paciente/user/1');
+    setPacients(response.data);
+  }
+
+  const onResetForm = () => {
+    childRef.current.handleResetForm();
+  }
+
+  const OnEdit = (values) => {
+    childRef.current.handleSetValues(values);
+  }
 
   return (
     <Page className={classes.root} title="Pacientes">
       <Container maxWidth="lg">
         <Box display="flex" justifyContent="flex-end">
-          <Button color="primary" variant="contained">Adicionar Paciente</Button>
+          <Button color="primary" variant="contained" onClick={onResetForm}>Adicionar Paciente</Button>
         </Box>
         <br></br>
         <Grid container spacing={3}>
-          <Grid item lg={6} md={6} xs={12}>
-            <Results users={users} />
+          <Grid item lg={7} md={7} xs={12}>
+            <Results pacients={pacients} onEdit={OnEdit} getPacientes={getPacientes} />
           </Grid>
-          <Grid item lg={6} md={6} xs={12}>
-            <Details />
+          <Grid item lg={5} md={5} xs={12}>
+            <Details ref={childRef} getPacientes={getPacientes} />
           </Grid>
         </Grid>
       </Container>
@@ -44,4 +63,4 @@ const SpecialtyType = () => {
   );
 };
 
-export default SpecialtyType;
+export default Paciente;
