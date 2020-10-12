@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useImperativeHandle, forwardRef } from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import {
@@ -12,16 +12,17 @@ import {
   TextField,
   makeStyles
 } from '@material-ui/core';
+import api from '../../../utils/api';
+import MessageDiaglog from '../../../components/MessageDialog';
 
 const useStyles = makeStyles(() => ({
   root: {}
 }));
 
-const ProfileDetails = ({ className, ...rest }) => {
+const ProfileDetails = forwardRef(({ className, getSituacaoConsulta, ...rest }, ref) => {
   const classes = useStyles();
-  const [values, setValues] = useState({
-    firstName: 'Katarina'
-  });
+  const [values, setValues] = useState({});
+  const childRef = useRef();
 
   const handleChange = (event) => {
     setValues({
@@ -29,6 +30,32 @@ const ProfileDetails = ({ className, ...rest }) => {
       [event.target.name]: event.target.value
     });
   };
+
+  const onSubmit = async () => {
+    
+    if(values.id === undefined) { 
+      await api.post('/situacaoConsulta', values);
+      childRef.current.handleOpenMessage('Situação da Consulta cadastrada com sucesso!', 'success');
+    } else {
+      await api.patch('/situacaoConsulta/' + values.id, values);
+      childRef.current.handleOpenMessage('Situação da Consulta atualizada com sucesso!', 'success');
+    }
+    getSituacaoConsulta();
+    setValues({ descricao: ''});
+  }
+  
+  useImperativeHandle(ref, () => ({
+
+    handleResetForm() {
+      setValues({ descricao: ''});
+    },
+    handleSetValues(values) {
+      setValues({
+        ...values,
+      });
+    }
+
+  }));
 
   return (
     <form
@@ -43,7 +70,7 @@ const ProfileDetails = ({ className, ...rest }) => {
         <CardContent>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="Descrição" name="descricao" onChange={handleChange} required value={values.firstName} variant="outlined" />
+              <TextField fullWidth label="Descrição" name="descricao" onChange={handleChange} required value={values.descricao} variant="outlined"  inputRef={input => input && input.focus()}/>
             </Grid>            
           </Grid>
         </CardContent>
@@ -52,15 +79,17 @@ const ProfileDetails = ({ className, ...rest }) => {
           
         </Box>
         <Box display="flex" justifyContent="flex-end" p={2} >
-          <Button color="primary" variant="contained">Gravar</Button>
+        <Button color="primary" variant="contained" onClick={onSubmit}>Gravar</Button>
         </Box>
       </Card>
+      <MessageDiaglog ref={childRef} />
     </form>
   );
-};
+});
 
 ProfileDetails.propTypes = {
-  className: PropTypes.string
+  className: PropTypes.string,
+  getSituacaoConsulta: PropTypes.func
 };
 
 export default ProfileDetails;

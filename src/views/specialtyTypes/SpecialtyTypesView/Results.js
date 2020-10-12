@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const Results = ({ onEdit, className, specialtyTypes, ...rest }) => {
+const Results = ({ onEdit, className, specialtyTypes, getTipoEspecialidade, ...rest }) => {
   const classes = useStyles();
   const [selectedCustomerIds] = useState([]);
   const [limit, setLimit] = useState(10);
@@ -45,6 +45,7 @@ const Results = ({ onEdit, className, specialtyTypes, ...rest }) => {
   const handleDelete = async (id) => {
     await api.delete('/tipoEspecialidade/' + id);
     childRef.current.handleOpenMessage('Tipo de Especialidade deletado com sucesso!', 'success');
+    getTipoEspecialidade();
   }
 
   return (
@@ -91,7 +92,8 @@ const Results = ({ onEdit, className, specialtyTypes, ...rest }) => {
 Results.propTypes = {
   className: PropTypes.string,
   specialtyTypes: PropTypes.array.isRequired,
-  onEdit: PropTypes.func
+  onEdit: PropTypes.func,
+  getTipoEspecialidade: PropTypes.func
 };
 
 export default Results;

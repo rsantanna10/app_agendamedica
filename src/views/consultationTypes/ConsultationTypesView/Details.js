@@ -12,18 +12,18 @@ import {
   TextField,
   makeStyles
 } from '@material-ui/core';
+import api from '../../../utils/api';
 import MessageDiaglog from '../../../components/MessageDialog';
 
 const useStyles = makeStyles(() => ({
   root: {}
 }));
 
-const ProfileDetails = forwardRef(({ className, ...rest }, ref) => {
+const ProfileDetails = forwardRef(({ className, getTipoConsulta, ...rest }, ref) => {
   const classes = useStyles();
   const [values, setValues] = useState({});
   const childRef = useRef();
   
-
   const handleChange = (event) => {
     setValues({
       ...values,
@@ -31,10 +31,17 @@ const ProfileDetails = forwardRef(({ className, ...rest }, ref) => {
     });
   };
 
-  const onSubmit = () => {
-    //setMessage('');
-    childRef.current.handleOpenMessage('Tipo de Consulta cadastrada com sucesso!', 'success');
-    setValues({ descricao: ''});
+  const onSubmit = async () => {
+    
+    if(values.id === undefined) { 
+      await api.post('/tipoConsulta', values);
+      childRef.current.handleOpenMessage('Tipo de Consulta cadastrada com sucesso!', 'success');
+    } else {
+      await api.patch('/tipoConsulta/' + values.id, values);
+      childRef.current.handleOpenMessage('Tipo de Consulta atualizada com sucesso!', 'success');
+    }
+    getTipoConsulta();
+    setValues({ descricao: '', cor:''});
   }
   
   useImperativeHandle(ref, () => ({
@@ -45,12 +52,10 @@ const ProfileDetails = forwardRef(({ className, ...rest }, ref) => {
     handleSetValues(values) {
       setValues({
         ...values,
-        [values.name]: values.value
       });
     }
 
   }));
-
   
   return (
     <form
@@ -65,7 +70,10 @@ const ProfileDetails = forwardRef(({ className, ...rest }, ref) => {
         <CardContent>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="Descrição" name="descricao" onChange={handleChange} required value={values.descricao} variant="outlined" inputRef={input => input && input.focus()} />
+              <TextField fullWidth label="Descrição" name="descricao" onChange={handleChange} required value={values.descricao} variant="outlined" InputLabelProps={{shrink: true}} />
+            </Grid>
+            <Grid item md={12} xs={12} >
+              <TextField fullWidth label="Cor" name="cor" onChange={handleChange} required value={values.cor} variant="outlined" InputLabelProps={{shrink: true}} />
             </Grid>            
           </Grid>
         </CardContent>
@@ -80,7 +88,8 @@ const ProfileDetails = forwardRef(({ className, ...rest }, ref) => {
 });
 
 ProfileDetails.propTypes = {
-  className: PropTypes.string
+  className: PropTypes.string,
+  getTipoConsulta: PropTypes.func
 };
 
 export default ProfileDetails;

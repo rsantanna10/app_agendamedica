@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Button,
@@ -9,7 +9,7 @@ import {
 import Page from 'src/components/Page';
 import Results from './Results';
 import ProfileDetails from './Details';
-import data from './data';
+import api from '../../../utils/api';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,10 +20,19 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const SpecialtyType = () => {
+const ConsultationType = () => {
   const classes = useStyles();
-  const [consultationTypes] = useState(data);
+  const [consultationTypes, setConsultationTypes] = useState([]);
   const childRef = useRef();
+  
+  useEffect(() => {
+    getTipoConsulta();
+  }, []);
+
+  const getTipoConsulta = async() => {
+    const response = await api.get('/tipoConsulta');
+    setConsultationTypes(response.data);
+  }
 
   const onResetForm = () => {
     childRef.current.handleResetForm();
@@ -42,10 +51,10 @@ const SpecialtyType = () => {
         <br></br>
         <Grid container spacing={3}>
           <Grid item lg={6} md={6} xs={12}>
-            <Results consultationTypes={consultationTypes} onEdit={OnEdit} />
+            <Results consultationTypes={consultationTypes} onEdit={OnEdit} getTipoConsulta={getTipoConsulta} />
           </Grid>
           <Grid item lg={6} md={6} xs={12}>
-            <ProfileDetails ref={childRef}/>
+            <ProfileDetails ref={childRef} getTipoConsulta={getTipoConsulta} />
           </Grid>
         </Grid>
       </Container>
@@ -53,4 +62,4 @@ const SpecialtyType = () => {
   );
 };
 
-export default SpecialtyType;
+export default ConsultationType;

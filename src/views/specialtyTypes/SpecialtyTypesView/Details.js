@@ -19,7 +19,7 @@ const useStyles = makeStyles(() => ({
   root: {}
 }));
 
-const ProfileDetails = forwardRef(({ className, ...rest }, ref) => {
+const ProfileDetails = forwardRef(({ className, getTipoEspecialidade, ...rest }, ref) => {
   const classes = useStyles();
   const [values, setValues] = useState({});
   const childRef = useRef();
@@ -54,7 +54,7 @@ const ProfileDetails = forwardRef(({ className, ...rest }, ref) => {
       await api.patch('/tipoEspecialidade/' + values.id, values);
       childRef.current.handleOpenMessage('Tipo de Especialidade atualizado com sucesso!', 'success');
     }
-        
+    getTipoEspecialidade();
     setValues({ descricao: ''});
   }
 
@@ -89,7 +89,8 @@ const ProfileDetails = forwardRef(({ className, ...rest }, ref) => {
 });;
 
 ProfileDetails.propTypes = {
-  className: PropTypes.string
+  className: PropTypes.string,
+  getTipoEspecialidade: PropTypes.func
 };
 
 export default ProfileDetails;

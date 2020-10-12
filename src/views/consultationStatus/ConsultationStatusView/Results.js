@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -13,8 +13,12 @@ import {
   TableHead,
   TablePagination,
   TableRow,
-  makeStyles
+  makeStyles,
+  IconButton
 } from '@material-ui/core';
+import {Delete as DeleteIcon, Edit as EditIcon} from '@material-ui/icons';
+import MessageDiaglog from '../../../components/MessageDialog';
+import api from '../../../utils/api';
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -23,12 +27,12 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const Results = ({ className, consultationStatus, ...rest }) => {
+const Results = ({ className, consultationStatus, onEdit, getSituacaoConsulta, ...rest }) => {
   const classes = useStyles();
   const [selectedCustomerIds] = useState([]);
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(0);
-
+  const childRef = useRef();
 
   const handleLimitChange = (event) => {
     setLimit(event.target.value);
@@ -38,7 +42,14 @@ const Results = ({ className, consultationStatus, ...rest }) => {
     setPage(newPage);
   };
 
+  const handleDelete = async (id) => {
+    await api.delete('/situacaoConsulta/' + id);
+    childRef.current.handleOpenMessage('Situação da Consulta deletada com sucesso!', 'success');
+    getSituacaoConsulta();
+  }
+
   return (
+    <>
     <Card className={clsx(classes.root, className)} {...rest} >
       <CardHeader title="Lista de Situação de Consulta" />
       <Divider />
@@ -53,7 +64,11 @@ const Results = ({ className, consultationStatus, ...rest }) => {
             <TableBody>
               {consultationStatus.slice(0, limit).map((consultation) => (
                 <TableRow hover key={consultation.id} selected={selectedCustomerIds.indexOf(consultation.id) !== -1}>
-                  <TableCell>{consultation.descricao}</TableCell>                
+                  <TableCell>{consultation.descricao}</TableCell>
+                  <TableCell  align="right" width="30%">
+                    <IconButton onClick={() => onEdit(consultation)}><EditIcon color="primary" /></IconButton>|
+                    <IconButton onClick={() => handleDelete(consultation.id)}><DeleteIcon color="secondary"/></IconButton>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -69,12 +84,16 @@ const Results = ({ className, consultationStatus, ...rest }) => {
         rowsPerPageOptions={[5, 10, 25]}
       />
     </Card>
+    <MessageDiaglog ref={childRef} />
+    </>
   );
 };
 
 Results.propTypes = {
   className: PropTypes.string,
-  consultationStatus: PropTypes.array.isRequired
+  consultationStatus: PropTypes.array.isRequired,
+  onEdit: PropTypes.func,
+  getSituacaoConsulta: PropTypes.func
 };
 
 export default Results;

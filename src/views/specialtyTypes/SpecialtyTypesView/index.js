@@ -51,10 +51,10 @@ const SpecialtyType = () => {
         <br></br>
         <Grid container spacing={3}>
           <Grid item lg={6} md={6} xs={12}>
-            <Results specialtyTypes={specialtyTypes} onEdit={OnEdit}/>
+            <Results specialtyTypes={specialtyTypes} onEdit={OnEdit} getTipoEspecialidade={getTipoEspecialidade}/>
           </Grid>
           <Grid item lg={6} md={6} xs={12}>
-            <ProfileDetails ref={childRef} />
+            <ProfileDetails ref={childRef} getTipoEspecialidade={getTipoEspecialidade} />
           </Grid>
         </Grid>
       </Container>
