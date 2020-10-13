@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import React,  { useRef } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import {
@@ -12,6 +12,7 @@ import {
   makeStyles
 } from '@material-ui/core';
 import Page from 'src/components/Page';
+import MessageDiaglog from '../../components/MessageDialog';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -22,9 +23,13 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const RegisterView = () => {
+const ForgotPasswordView = () => {
   const classes = useStyles();
-  const navigate = useNavigate();
+  const childRef = useRef();
+  
+  const onSubmit = () => {
+    childRef.current.handleOpenMessage('E-mail de recuperação de senha foi enviado com sucesso para seu e-mail!', 'success');
+  }
 
   return (
     <Page className={classes.root} title="Esqueceu sua senha">
@@ -48,8 +53,9 @@ const RegisterView = () => {
                 email: Yup.string().email('E-mail inválido').max(255).required('Email é obrigatório')
               })
             }
-            onSubmit={() => {
-              navigate('/app/dashboard', { replace: true });
+            onSubmit={(values, {resetForm}) => {
+              onSubmit();
+              resetForm({ values: ''});
             }}
           >
             {({
@@ -120,8 +126,9 @@ const RegisterView = () => {
           </Formik>
         </Container>
       </Box>
+      <MessageDiaglog ref={childRef} />
     </Page>
   );
 };
 
-export default RegisterView;
+export default ForgotPasswordView;

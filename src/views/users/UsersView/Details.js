@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useImperativeHandle, forwardRef } from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import {
@@ -14,19 +14,25 @@ import {
   FormControlLabel,
   Checkbox
 } from '@material-ui/core';
+import api from '../../../utils/api';
+import MessageDiaglog from '../../../components/MessageDialog';
 
 const useStyles = makeStyles(() => ({
   root: {}
 }));
 
-const ProfileDetails = ({ className, ...rest }) => {
+const Details = forwardRef(({ className, getUsers, ...rest }, ref) => {
+  const userDefault = {
+    tipoEspecialidadeId: null,
+    nome: '',
+    login: '',
+    senha: '',
+    ativo: null
+  };
+  
   const classes = useStyles();
-  const [values, setValues] = useState({
-    nome: 'Renato Sant\'Anna',
-    tipoEspecialidade: 'Dentista',
-    login: 'renato.santanna',
-    ativo: true
-  });
+  const [values, setValues] = useState(userDefault);
+  const childRef = useRef(); 
 
   const handleChange = (event) => {
     setValues({
@@ -34,6 +40,32 @@ const ProfileDetails = ({ className, ...rest }) => {
       [event.target.name]: event.target.value
     });
   };
+
+  const onSubmit = async () => {
+    
+    if(values.id === undefined) { 
+      await api.post('/usuario', values);
+      childRef.current.handleOpenMessage('Usuário cadastrado com sucesso!', 'success');
+    } else {
+      await api.patch('/usuario/' + values.id, values);
+      childRef.current.handleOpenMessage('Usuário atualizado com sucesso!', 'success');
+    }
+    getUsers();
+    setValues(userDefault);
+  }
+  
+  useImperativeHandle(ref, () => ({
+
+    handleResetForm() {
+      setValues(userDefault);
+    },
+    handleSetValues(values) {
+      setValues({
+        ...values,
+      });
+    }
+
+  }));
 
   return (
     <form
@@ -48,14 +80,14 @@ const ProfileDetails = ({ className, ...rest }) => {
         <CardContent>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="Nome" name="nome" onChange={handleChange} required value={values.nome} variant="outlined" />
+              <TextField fullWidth label="Tipo de Especialidade" name="tipoEspecialidadeId" onChange={handleChange} required value={values.tipoEspecialidadeId} variant="outlined" />
             </Grid>            
           </Grid>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="Tipo de Especialidade" name="tipoEspecialidade" onChange={handleChange} required value={values.tipoEspecialidade} variant="outlined" />
+              <TextField fullWidth label="Nome" name="nome" onChange={handleChange} required value={values.nome} variant="outlined" />
             </Grid>            
-          </Grid>
+          </Grid>          
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
               <TextField fullWidth label="Login" name="login" onChange={handleChange} required value={values.login} variant="outlined" />
@@ -63,26 +95,28 @@ const ProfileDetails = ({ className, ...rest }) => {
           </Grid>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="Senha" name="senha" type="password" onChange={handleChange}  variant="outlined" />
+              <TextField fullWidth label="Senha" name="senha" type="password" onChange={handleChange} required value={values.senha}  variant="outlined" />
             </Grid>            
           </Grid>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <FormControlLabel control={( <Checkbox defaultChecked={values.ativo}  /> )} label="Ativo" />
+              <FormControlLabel name="ativo" control={( <Checkbox defaultChecked={values.ativo}  /> )} label="Ativo" />
             </Grid>            
           </Grid>
         </CardContent>
         <Divider />
-        <Box display="flex" justifyContent="flex-end" p={2} >
-          <Button color="primary" variant="contained">Gravar</Button>
+        <Box display="flex" justifyContent="flex-end" p={2}>
+          <Button color="primary" variant="contained" onClick={onSubmit}>Gravar</Button>
         </Box>
       </Card>
+      <MessageDiaglog ref={childRef} />
     </form>
   );
+});
+
+Details.propTypes = {
+  className: PropTypes.string,
+  getUsers: PropTypes.func
 };
 
-ProfileDetails.propTypes = {
-  className: PropTypes.string
-};
-
-export default ProfileDetails;
+export default Details;

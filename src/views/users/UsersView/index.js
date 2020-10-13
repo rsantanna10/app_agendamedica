@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Button,
@@ -9,7 +9,7 @@ import {
 import Page from 'src/components/Page';
 import Results from './Results';
 import Details from './Details';
-import data from './data';
+import api from '../../../utils/api';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,23 +20,42 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const SpecialtyType = () => {
+const User = () => {
   const classes = useStyles();
-  const [users] = useState(data);
+  const [users, setUsers] = useState([]);
+  const childRef = useRef();
+
+  useEffect(() => {
+    getUsers();
+  }, []);
+
+  const getUsers = async() => {
+    const response = await api.get('/usuario');
+    setUsers(response.data);
+  }
+
+  const onResetForm = () => {
+    childRef.current.handleResetForm();
+  }
+
+  const OnEdit = (values) => {
+    console.log(values);
+    childRef.current.handleSetValues(values);
+  }
 
   return (
     <Page className={classes.root} title="Usuário">
       <Container maxWidth="lg">
         <Box display="flex" justifyContent="flex-end">
-          <Button color="primary" variant="contained">Adicionar Usuário</Button>
+          <Button color="primary" variant="contained" onClick={onResetForm}>Adicionar Usuário</Button>
         </Box>
         <br></br>
         <Grid container spacing={3}>
           <Grid item lg={6} md={6} xs={12}>
-            <Results users={users} />
+            <Results users={users} onEdit={OnEdit} getUsers={getUsers} />
           </Grid>
           <Grid item lg={6} md={6} xs={12}>
-            <Details />
+            <Details ref={childRef} getUsers={getUsers} />
           </Grid>
         </Grid>
       </Container>
@@ -44,4 +63,4 @@ const SpecialtyType = () => {
   );
 };
 
-export default SpecialtyType;
+export default User;

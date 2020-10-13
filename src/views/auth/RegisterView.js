@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
@@ -18,6 +18,8 @@ import {
   InputLabel
 } from '@material-ui/core';
 import Page from 'src/components/Page';
+import api from '../../utils/api';
+import MessageDiaglog from '../../components/MessageDialog';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,7 +32,27 @@ const useStyles = makeStyles((theme) => ({
 
 const RegisterView = () => {
   const classes = useStyles();
-  const navigate = useNavigate();
+  const [specialtyTypes, setSpecialtyTypes] = useState([{}]);
+  
+  const childRef = useRef();
+
+  useEffect(() => {
+    getTipoEspecialidade();
+  }, []);
+
+  const getTipoEspecialidade = async() => {
+    const response = await api.get('/tipoEspecialidade');
+    setSpecialtyTypes(response.data);
+  }
+
+   const onSubmit = async (values) => {
+    
+     await api.post('/usuario', values).then( async resp => {
+      childRef.current.handleOpenMessage('Usuário cadastro com sucesso!', 'success');
+     }).catch((error) => {
+      childRef.current.handleOpenMessage(error.response.data, 'error');
+     });
+   }
 
   return (
     <Page className={classes.root} title="Registrar Usuário">
@@ -43,23 +65,33 @@ const RegisterView = () => {
         <Container maxWidth="sm">
           <Formik
             initialValues={{
-              email: '',
-              firstName: '',
-              lastName: '',
-              password: '',
+              login: '',
+              tipoEspecialidadeId: '',
+              nome: '',
+              senha: '',
               policy: false
             }}
             validationSchema={
               Yup.object().shape({
-                email: Yup.string().email('Must be a valid email').max(255).required('Email é um campo obrigatório'),
-                tipoEspecialiade: Yup.string().max(255).required('Tipo de Especialidade é um campo obrigatório'),
+                tipoEspecialidadeId: Yup.string().max(255).required('Tipo de Especialidade é um campo obrigatório'),
                 nome: Yup.string().max(255).required('Nome é um campo obrigatório'),
+                login: Yup.string().email('O e-mail deve ser válido').max(255).required('Email é um campo obrigatório'),
                 senha: Yup.string().max(255).required('Senha é um campo obrigatório'),
                 policy: Yup.boolean().oneOf([true], 'Esse campo precisa ser marcado')
               })
             }
-            onSubmit={() => {
-              navigate('/app/dashboard', { replace: true });
+            onSubmit={(values, {resetForm}) => {              
+              const params = {
+                tipoEspecialidadeId: values.tipoEspecialidadeId,
+                tipoUsuario: 'U',
+                nome: values.nome,
+                login: values.login,
+                senha: values.senha,
+                ativo: true
+              };
+
+              onSubmit(params);
+              resetForm({ values: ''});
             }}
           >
             {({
@@ -90,14 +122,13 @@ const RegisterView = () => {
                 <FormControl className={classes.formControl} fullWidth>
                   <InputLabel id="tipoEspecialidade">Tipo de Especialidade</InputLabel>
                   <Select 
-                  id="tipoEspecialidade" 
-                  value={values.tipoEspecialiade} 
-                  onChange={handleChange} 
-                  error={Boolean(touched.email && errors.email)}                  
-                  helperText={touched.email && errors.email}>
-                    <MenuItem value={1}>Dentista</MenuItem>
-                    <MenuItem value={2}>Ginicologista</MenuItem>
-                    <MenuItem value={3}>Thirty</MenuItem>
+                  name="tipoEspecialidadeId" 
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  value={values.tipoEspecialidadeId}
+                  error={Boolean(touched.tipoEspecialidadeId && errors.tipoEspecialidadeId)}                  
+                  helperText={touched.tipoEspecialidadeId && errors.tipoEspecialidadeId}>
+                    {specialtyTypes.map(item => <MenuItem value={item.id}>{item.descricao}</MenuItem>)}
                   </Select>
                 </FormControl>
                 <TextField
@@ -113,16 +144,16 @@ const RegisterView = () => {
                   variant="outlined"
                 />
                 <TextField
-                  error={Boolean(touched.email && errors.email)}
+                  error={Boolean(touched.login && errors.login)}
                   fullWidth
-                  helperText={touched.email && errors.email}
+                  helperText={touched.login && errors.login}
                   label="E-mail"
                   margin="normal"
-                  name="email"
+                  name="login"
                   onBlur={handleBlur}
                   onChange={handleChange}
                   type="email"
-                  value={values.email}
+                  value={values.login}
                   variant="outlined"
                 />
                 <TextField
@@ -201,6 +232,7 @@ const RegisterView = () => {
           </Formik>
         </Container>
       </Box>
+      <MessageDiaglog ref={childRef} />
     </Page>
   );
 };
