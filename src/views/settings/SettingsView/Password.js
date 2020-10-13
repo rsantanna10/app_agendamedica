@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {
@@ -11,17 +11,23 @@ import {
   TextField,
   makeStyles
 } from '@material-ui/core';
+import api from '../../../utils/api';
+import MessageDiaglog from '../../../components/MessageDialog';
 
 const useStyles = makeStyles(({
   root: {}
 }));
 
 const Password = ({ className, ...rest }) => {
+  const defaultValues = {
+    senha: '',
+    confirmaSenha: ''
+  };
+
   const classes = useStyles();
-  const [values, setValues] = useState({
-    password: '',
-    confirm: ''
-  });
+  const [values, setValues] = useState(defaultValues);
+  const childRef = useRef();
+
 
   const handleChange = (event) => {
     setValues({
@@ -29,6 +35,13 @@ const Password = ({ className, ...rest }) => {
       [event.target.name]: event.target.value
     });
   };
+
+  const onSubmit = async () => {
+    
+    await api.post('/usuario/senha/1', { senha: values.senha});
+    childRef.current.handleOpenMessage('Senha atualizada com sucesso!', 'success');
+    setValues(defaultValues);
+  }
 
   return (
     <form
@@ -49,7 +62,7 @@ const Password = ({ className, ...rest }) => {
             name="senha"
             onChange={handleChange}
             type="password"
-            value={values.password}
+            value={values.senha}
             variant="outlined"
           />
           <TextField
@@ -59,7 +72,7 @@ const Password = ({ className, ...rest }) => {
             name="confirmaSenha"
             onChange={handleChange}
             type="password"
-            value={values.confirm}
+            value={values.confirmaSenha}
             variant="outlined"
           />
         </CardContent>
@@ -69,9 +82,10 @@ const Password = ({ className, ...rest }) => {
           justifyContent="flex-end"
           p={2}
         >
-          <Button color="primary" variant="contained">Atualizar</Button>
+          <Button color="primary" variant="contained" onClick={onSubmit}>Atualizar</Button>
         </Box>
       </Card>
+      <MessageDiaglog ref={childRef} />
     </form>
   );
 };

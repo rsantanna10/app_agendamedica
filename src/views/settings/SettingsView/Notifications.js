@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef }from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {
@@ -15,6 +15,8 @@ import {
   makeStyles,
   TextField
 } from '@material-ui/core';
+import api from '../../../utils/api';
+import MessageDiaglog from '../../../components/MessageDialog';
 
 const useStyles = makeStyles(({
   root: {},
@@ -25,7 +27,51 @@ const useStyles = makeStyles(({
 }));
 
 const Notifications = ({ className, ...rest }) => {
+  const defaultValues = {
+    horaInicio: '',
+    horaFim: '',
+    domingo: false,
+    segunda: false,
+    terca: false,
+    quarta: false,
+    quinta: false,
+    sexta: false,
+    sabado: false,
+    textoAgendamento: '',
+    textoCancelamento: '',
+    textoReagendamento: ''
+  };
+
   const classes = useStyles();
+  const [values, setValues] = useState(defaultValues);
+  const childRef = useRef();
+
+  const handleChange = (event) => {
+    setValues({
+      ...values,
+      [event.target.name]: event.target.value
+    });
+  };
+
+  const onSubmit = async () => {
+    
+    await api.patch('/configuracao/usuario/8', { ...values, intervalo: 30});
+    childRef.current.handleOpenMessage('Dados atualizados com sucesso!', 'success');    
+  }
+
+  useEffect(() => {
+    getConfiguracao();
+  }, []);
+
+  const getConfiguracao = async() => {
+    const response = await api.get('/configuracao/usuario/8');
+    console.log(response.data);
+    if(response.data.length === 0) {
+      setValues(defaultValues);
+    } else {
+      setValues(response.data[0]);
+    }
+  }
 
   return (
     <form
@@ -53,9 +99,9 @@ const Notifications = ({ className, ...rest }) => {
                Horário de atendimento
               </Typography>
               <Box component="div" display="inline">
-                <TextField md={6} label="Início" name="horaInicio" type="text" required variant="outlined" />
+                <TextField md={6} label="Início" name="horaInicio" type="text"  value={values.horaInicio} required variant="outlined"  onChange={handleChange}InputLabelProps={{ shrink: true }} />
                 {' '}
-                <TextField md={6} label="Fim" name="horaFim" type="text" required variant="outlined" />
+                <TextField md={6} label="Fim" name="horaFim" type="text" value={values.horaFim} required variant="outlined" onChange={handleChange} InputLabelProps={{ shrink: true }} />
               </Box>
               <br />
               <Divider />
@@ -64,31 +110,32 @@ const Notifications = ({ className, ...rest }) => {
                 Dias de atendimento
               </Typography>
               <Box component="div" display="inline">
-                <FormControlLabel control={(<Checkbox defaultChecked />)} label="Domingo" />
-                <FormControlLabel control={(<Checkbox defaultChecked />)} label="Segunda"/>
-                <FormControlLabel control={<Checkbox />} label="Terça" />
-                <FormControlLabel control={(<Checkbox defaultChecked />)} label="Quarta"/>
-                <FormControlLabel control={(<Checkbox defaultChecked />)} label="Quinta"/>
-                <FormControlLabel control={(<Checkbox defaultChecked />)} label="Sexta"/>
-                <FormControlLabel control={(<Checkbox defaultChecked />)} label="Sábado"/>
+                <FormControlLabel control={(<Checkbox defaultChecked={values.domingo}  checked={values.domingo} onChange={e => { setValues({...values, domingo: e.target.checked })}} /> )} label="Domingo" />
+                <FormControlLabel control={(<Checkbox defaultChecked={values.segunda}  checked={values.segunda} onChange={e => { setValues({...values, segunda: e.target.checked })}} /> )} label="Segunda" />
+                <FormControlLabel control={(<Checkbox defaultChecked={values.terca}  checked={values.terca} onChange={e => { setValues({...values, terca: e.target.checked })}} /> )} label="Terça" />
+                <FormControlLabel control={(<Checkbox defaultChecked={values.quarta}  checked={values.quarta} onChange={e => { setValues({...values, quarta: e.target.checked })}} /> )} label="Quarta" />
+                <FormControlLabel control={(<Checkbox defaultChecked={values.quinta}  checked={values.quinta} onChange={e => { setValues({...values, quinta: e.target.checked })}} /> )} label="Quinta" />
+                <FormControlLabel control={(<Checkbox defaultChecked={values.sexta}  checked={values.sexta} onChange={e => { setValues({...values, sexta: e.target.checked })}} /> )} label="Sexta" />
+                <FormControlLabel control={(<Checkbox defaultChecked={values.sabado}  checked={values.sabado} onChange={e => { setValues({...values, sabado: e.target.checked })}} /> )} label="Sábado" />
               </Box>
               <br />
               <Typography color="textPrimary" gutterBottom variant="h6">Texto SMS Agendamento</Typography>
-              <TextField placeholder="Máximo 150 caracteres" multiline rows={3} />
+              <TextField placeholder="Máximo 150 caracteres"  name="textoAgendamento" value={values.textoAgendamento} onChange={handleChange} multiline rows={3} />
               <br />
               <Typography color="textPrimary" gutterBottom variant="h6">Texto SMS Reagendamento</Typography>
-              <TextField placeholder="Máximo 150 caracteres" multiline rows={3} />
+              <TextField placeholder="Máximo 150 caracteres"  name="textoReagendamento" value={values.textoReagendamento} onChange={handleChange} multiline rows={3} />
               <br />
               <Typography color="textPrimary" gutterBottom variant="h6">Texto SMS Cancelamento</Typography>
-              <TextField placeholder="Máximo 150 caracteres" multiline rows={3} />
+              <TextField placeholder="Máximo 150 caracteres" name="textoCancelamento" value={values.textoCancelamento} onChange={handleChange} multiline rows={3} />
             </Grid>
           </Grid>
         </CardContent>
         <Divider />
         <Box display="flex" justifyContent="flex-end" p={2}>
-          <Button color="primary" variant="contained">Salvar</Button>
+          <Button color="primary" variant="contained" onClick={onSubmit}>Salvar</Button>
         </Box>
       </Card>
+      <MessageDiaglog ref={childRef} />
     </form>
   );
 };
