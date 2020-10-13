@@ -45,16 +45,16 @@ const User = () => {
 
   return (
     <Page className={classes.root} title="Usuário">
-      <Container maxWidth="lg">
+      <Container maxWidth="xl">
         <Box display="flex" justifyContent="flex-end">
           <Button color="primary" variant="contained" onClick={onResetForm}>Adicionar Usuário</Button>
         </Box>
         <br></br>
         <Grid container spacing={3}>
-          <Grid item lg={6} md={6} xs={12}>
+          <Grid item lg={7} md={7} xs={12}>
             <Results users={users} onEdit={OnEdit} getUsers={getUsers} />
           </Grid>
-          <Grid item lg={6} md={6} xs={12}>
+          <Grid item lg={5} md={5} xs={12}>
             <Details ref={childRef} getUsers={getUsers} />
           </Grid>
         </Grid>

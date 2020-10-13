@@ -1,4 +1,4 @@
-import React, { useState, useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import {
@@ -12,7 +12,11 @@ import {
   TextField,
   makeStyles,
   FormControlLabel,
-  Checkbox
+  Checkbox,  
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@material-ui/core';
 import api from '../../../utils/api';
 import MessageDiaglog from '../../../components/MessageDialog';
@@ -24,14 +28,17 @@ const useStyles = makeStyles(() => ({
 const Details = forwardRef(({ className, getUsers, ...rest }, ref) => {
   const userDefault = {
     tipoEspecialidadeId: null,
+    tipoUsuario: null,
     nome: '',
     login: '',
     senha: '',
-    ativo: null
+    ativo: false
   };
   
   const classes = useStyles();
   const [values, setValues] = useState(userDefault);
+  const [specialtyTypes, setSpecialtyTypes] = useState([]);
+  const [tipoUsuarios] = useState([ {id: 'A', descricao: 'Administrador'},{ id: 'U', descricao: 'Usuário' }]);
   const childRef = useRef(); 
 
   const handleChange = (event) => {
@@ -67,6 +74,15 @@ const Details = forwardRef(({ className, getUsers, ...rest }, ref) => {
 
   }));
 
+  useEffect(() => {
+    getTipoEspecialidade();
+  }, []);
+
+  const getTipoEspecialidade = async() => {
+    const response = await api.get('/tipoEspecialidade');
+    setSpecialtyTypes(response.data);
+  }
+
   return (
     <form
       autoComplete="off"
@@ -78,9 +94,32 @@ const Details = forwardRef(({ className, getUsers, ...rest }, ref) => {
         <CardHeader title="Cadastro de Usuário" />
         <Divider />
         <CardContent>
+        <Grid container spacing={3}>
+            <Grid item md={12} xs={12} >
+              <FormControl className={classes.formControl} fullWidth>
+                  <InputLabel id="tipoUsuario" shrink={true}>Tipo Usuário</InputLabel>
+                  <Select 
+                  name="tipoUsuario"
+                  onChange={handleChange}
+                  value={values.tipoUsuario}>
+                    {tipoUsuarios.map(item => <MenuItem value={item.id}>{item.descricao}</MenuItem>)}
+                  </Select>
+                </FormControl>
+            </Grid>            
+          </Grid>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="Tipo de Especialidade" name="tipoEspecialidadeId" onChange={handleChange} required value={values.tipoEspecialidadeId} variant="outlined" />
+              <FormControl className={classes.formControl} fullWidth>
+                  <InputLabel id="tipoEspecialidadeId" shrink={true}>Tipo de Especialidade</InputLabel>
+                  <Select 
+                  aria-expanded={true}
+                  iconOutlined
+                  name="tipoEspecialidadeId"
+                  onChange={handleChange}
+                  value={values.tipoEspecialidadeId}>
+                    {specialtyTypes.map(item => <MenuItem value={item.id}>{item.descricao}</MenuItem>)}
+                  </Select>
+                </FormControl>
             </Grid>            
           </Grid>
           <Grid container spacing={3}>
@@ -100,7 +139,8 @@ const Details = forwardRef(({ className, getUsers, ...rest }, ref) => {
           </Grid>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <FormControlLabel name="ativo" control={( <Checkbox defaultChecked={values.ativo}  /> )} label="Ativo" />
+              <FormControlLabel name="ativo" control={( 
+                <Checkbox defaultChecked={values.ativo}  checked={values.ativo} onChange={e => { setValues({...values, ativo: e.target.checked })}} /> )} label="Ativo" />
             </Grid>            
           </Grid>
         </CardContent>
