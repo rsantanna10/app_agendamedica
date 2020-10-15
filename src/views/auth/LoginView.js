@@ -17,6 +17,7 @@ import GoogleIcon from 'src/icons/Google';
 import Page from 'src/components/Page';
 import api  from '../../utils/api';
 import MessageDiaglog from '../../components/MessageDialog';
+import { GoogleLogin } from 'react-google-login';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -27,10 +28,33 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+
+
 const LoginView = () => {
   const classes = useStyles();
   const navigate = useNavigate();
   const childRef = useRef();
+
+  const responseGoogle = async (response) => {
+    let jwt = null;
+                await api.post(`http://localhost:3001/loginGoogle`, `{"login":"${response.email}"}`,
+                    {
+                      headers: { 'Content-Type': 'application/json' },
+                      observe: 'response',
+                    },
+                  )
+                  .then((response) => {
+                    jwt = response.data.token;
+                    localStorage.setItem('app_token', jwt);
+                  })
+                  .catch((error) => {
+                      childRef.current.handleOpenMessage('Usuário ou senha inválido(s)', 'error');
+                  });
+            
+                if (jwt) {
+                  navigate('/app/dashboard', { replace: true });
+                }
+  }
 
   return (
     <Page className={classes.root} title="Login">
@@ -68,7 +92,7 @@ const LoginView = () => {
           
               if (jwt) {
                 navigate('/app/dashboard', { replace: true });
-              }              
+              }
               
             }}
           >
@@ -110,20 +134,12 @@ const LoginView = () => {
                       Login com Facebook
                     </Button>
                   </Grid> */}
-                  <Grid
-                    item
-                    xs={12}
-                    md={12}
-                  >
-                    <Button
-                      fullWidth
-                      startIcon={<GoogleIcon />}
-                      onClick={handleSubmit}
-                      size="large"
-                      variant="contained"
-                    >
-                      Login com Google
-                    </Button>
+                  <Grid item xs={12} md={12} align="center">
+                  <GoogleLogin fullWidth clientId="38928079281-rqh60da8st1qvlajgpgdc56sb5h78hf4.apps.googleusercontent.com"
+                               buttonText="Login com Google"
+                               onSuccess={responseGoogle}
+                               onFailure={responseGoogle}
+                               cookiePolicy={'single_host_origin'}/>
                   </Grid>
                 </Grid>
                 <Box

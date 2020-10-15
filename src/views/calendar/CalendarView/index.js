@@ -37,6 +37,9 @@ const handleDateClick = (arg) => { // bind with an arrow function
   alert(arg.dateStr)
 }
 
+const EventDetail = (info) => {
+    
+  }
 
 const data =   [
   {

@@ -13,7 +13,11 @@ import {
   Grid,
   Typography,
   makeStyles,
-  TextField
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@material-ui/core';
 import jwt_decode from "jwt-decode";
 import api from '../../../utils/api';
@@ -31,6 +35,7 @@ const Notifications = ({ className, ...rest }) => {
   const defaultValues = {
     horaInicio: '',
     horaFim: '',
+    intervalo: '',
     domingo: false,
     segunda: false,
     terca: false,
@@ -47,6 +52,7 @@ const Notifications = ({ className, ...rest }) => {
   const classes = useStyles();
   const [values, setValues] = useState(defaultValues);
   const childRef = useRef();
+  const [intervalos] = useState(['60', '30', '20', '10', '5']);
 
   const handleChange = (event) => {
     setValues({
@@ -57,7 +63,7 @@ const Notifications = ({ className, ...rest }) => {
 
   const onSubmit = async () => {
     
-    await api.patch(`/configuracao/usuario/${usuario.id}`, { ...values, intervalo: 30});
+    await api.patch(`/configuracao/usuario/${usuario.id}`, { ...values});
     childRef.current.handleOpenMessage('Dados atualizados com sucesso!', 'success');    
   }
 
@@ -67,7 +73,6 @@ const Notifications = ({ className, ...rest }) => {
 
   const getConfiguracao = async() => {
     const response = await api.get(`/configuracao/usuario/${usuario.id}`,);
-    console.log(response.data);
     if(response.data.length === 0) {
       setValues(defaultValues);
     } else {
@@ -106,6 +111,17 @@ const Notifications = ({ className, ...rest }) => {
                 <TextField md={6} label="Fim" name="horaFim" type="text" value={values.horaFim} required variant="outlined" onChange={handleChange} InputLabelProps={{ shrink: true }} />
               </Box>
               <br />
+              <Grid item md={3} xs={12} >
+                <FormControl className={classes.formControl} fullWidth>
+                  <InputLabel id="intervalo" shrink={true}>Intervalo</InputLabel>
+                  <Select 
+                  name="intervalo"
+                  onChange={handleChange}
+                  value={values.intervalo}>
+                    {intervalos.map(item => <MenuItem value={item}>{item}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Grid>
               <Divider />
               <br/>
               <Typography color="textPrimary" gutterBottom variant="h6">
