@@ -17,6 +17,7 @@ import {
   RadioGroup,
   Radio
 } from '@material-ui/core';
+import jwt_decode from "jwt-decode";
 import api from '../../../utils/api';
 import MessageDiaglog from '../../../components/MessageDialog';
 
@@ -25,13 +26,15 @@ const useStyles = makeStyles(() => ({
 }));
 
 const ProfileDetails = forwardRef(({ className, getPacientes, ...rest }, ref) => {
+  const usuario = jwt_decode(localStorage.getItem('app_token'));
   const pacienteDefault = { 
-    usuarioId: 1,
+    usuarioId: usuario.id,
     nome: '',
     cpf: '',
     dataNascimento: '',
     sexo: null,
-    email: ''
+    email: '',
+    telefone: ''
   };
   
   const classes = useStyles();
@@ -125,7 +128,7 @@ const ProfileDetails = forwardRef(({ className, getPacientes, ...rest }, ref) =>
           </Grid>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="Celular" name="celular" value={values.celular} onChange={handleChange}  required variant="outlined" />
+              <TextField fullWidth label="Celular" name="telefone" value={values.telefone} onChange={handleChange}  required variant="outlined" />
             </Grid>            
           </Grid>
         </CardContent>

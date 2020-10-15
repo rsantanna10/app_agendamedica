@@ -15,6 +15,7 @@ import {
   makeStyles,
   TextField
 } from '@material-ui/core';
+import jwt_decode from "jwt-decode";
 import api from '../../../utils/api';
 import MessageDiaglog from '../../../components/MessageDialog';
 
@@ -41,6 +42,7 @@ const Notifications = ({ className, ...rest }) => {
     textoCancelamento: '',
     textoReagendamento: ''
   };
+  const usuario = jwt_decode(localStorage.getItem('app_token'));
 
   const classes = useStyles();
   const [values, setValues] = useState(defaultValues);
@@ -55,7 +57,7 @@ const Notifications = ({ className, ...rest }) => {
 
   const onSubmit = async () => {
     
-    await api.patch('/configuracao/usuario/8', { ...values, intervalo: 30});
+    await api.patch(`/configuracao/usuario/${usuario.id}`, { ...values, intervalo: 30});
     childRef.current.handleOpenMessage('Dados atualizados com sucesso!', 'success');    
   }
 
@@ -64,7 +66,7 @@ const Notifications = ({ className, ...rest }) => {
   }, []);
 
   const getConfiguracao = async() => {
-    const response = await api.get('/configuracao/usuario/8');
+    const response = await api.get(`/configuracao/usuario/${usuario.id}`,);
     console.log(response.data);
     if(response.data.length === 0) {
       setValues(defaultValues);

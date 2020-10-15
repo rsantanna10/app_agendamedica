@@ -32,7 +32,8 @@ const TopBar = ({
 
   
 const Signout = () => {
-  navigate('../login');
+  localStorage.removeItem('app_token');
+  navigate('/login');
 };
 
   return (

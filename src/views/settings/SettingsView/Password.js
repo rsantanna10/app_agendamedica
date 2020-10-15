@@ -11,6 +11,7 @@ import {
   TextField,
   makeStyles
 } from '@material-ui/core';
+import jwt_decode from "jwt-decode";
 import api from '../../../utils/api';
 import MessageDiaglog from '../../../components/MessageDialog';
 
@@ -24,6 +25,7 @@ const Password = ({ className, ...rest }) => {
     confirmaSenha: ''
   };
 
+  const usuario = jwt_decode(localStorage.getItem('app_token'));
   const classes = useStyles();
   const [values, setValues] = useState(defaultValues);
   const childRef = useRef();
@@ -38,7 +40,7 @@ const Password = ({ className, ...rest }) => {
 
   const onSubmit = async () => {
     
-    await api.post('/usuario/senha/1', { senha: values.senha});
+    await api.post(`/usuario/senha/${usuario.id}`, { senha: values.senha});
     childRef.current.handleOpenMessage('Senha atualizada com sucesso!', 'success');
     setValues(defaultValues);
   }

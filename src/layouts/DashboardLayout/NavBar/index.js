@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import jwt_decode from "jwt-decode";
+
 import {
   Box,
   Divider,
@@ -23,95 +25,6 @@ import {
 } from 'react-feather';
 import NavItem from './NavItem';
 
-let user = {
-  jobTitle: 'Senior Developer',
-  name: 'Katarina Smith'
-};
-
-user.jobTitle = 'Dentista';
-user.name = 'Renato Sant\' Anna';
-
-const isAdmin = true;
-let items = [];
-
-if (isAdmin) {
- items = [
-  {
-    href: '/app/dashboard',
-    icon: BarChartIcon,
-    title: 'Dashboard'
-  },
-  {
-    href: '/app/calendar',
-    icon: CalendarIcon,
-    title: 'Agenda Médica'
-  },
-  {
-    href: '/app/pacients',
-    icon: UserPlusIcon,
-    title: 'Pacientes'
-  },
-  {
-    href: '/app/users',
-    icon: UsersIcon,
-    title: 'Usuários'
-  },
-  {
-    href: '/app/consultationStatus',
-    icon: ShieldIcon,
-    title: 'Situações de Consulta'
-  },
-  {
-    href: '/app/specialtyTypes',
-    icon: PlusSquareIcon,
-    title: 'Tipos de Especialidade'
-  },
-  {
-    href: '/app/consultationTypes',
-    icon: ArchiveIcon,
-    title: 'Tipos de Consulta'
-  },
-  {
-    href: '/app/settings',
-    icon: SettingsIcon,
-    title: 'Configurações'
-  }/*,
-  {
-    href: '/login',
-    icon: LockIcon,
-    title: 'Login'
-  },
-  {
-    href: '/register',
-    icon: UserPlusIcon,
-    title: 'Register'
-  } */
-];
-} else {
-  items = [
-    {
-      href: '/app/dashboard',
-      icon: BarChartIcon,
-      title: 'Dashboard'
-    },
-    {
-      href: '/app/customers',
-      icon: UsersIcon,
-      title: 'Agenda Médica'
-    },
-    {
-      href: '/app/products',
-      icon: ShoppingBagIcon,
-      title: 'Pacientes'
-    },
-    {
-      href: '/app/settings',
-      icon: SettingsIcon,
-      title: 'Configurações'
-    }];
-
-}
-
 const useStyles = makeStyles(() => ({
   mobileDrawer: {
     width: 256
@@ -128,9 +41,106 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-const NavBar = ({ onMobileClose, openMobile }) => {
+const NavBar = ({ onMobileClose, openMobile, history }) => {
   const classes = useStyles();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  let usuario = null;
+  if ( localStorage.getItem('app_token')) { 
+    usuario = jwt_decode(localStorage.getItem('app_token'));
+  }
+    
+  let user = {
+    jobTitle: usuario === null ? '' : usuario.tipoEspecialidade,
+    name: usuario === null ? '' : usuario.nome
+  };
+  
+  const isAdmin = usuario === null ? false : (usuario.tipoUsuario === 'A');
+  let items = [];
+
+  if (isAdmin) {
+    items = [
+      {
+        href: '/app/dashboard',
+        icon: BarChartIcon,
+        title: 'Dashboard'
+      },
+      {
+        href: '/app/calendar',
+        icon: CalendarIcon,
+        title: 'Agenda Médica'
+      },
+      {
+        href: '/app/pacients',
+        icon: UserPlusIcon,
+        title: 'Pacientes'
+      },
+      {
+        href: '/app/users',
+        icon: UsersIcon,
+        title: 'Usuários'
+      },
+      {
+        href: '/app/consultationStatus',
+        icon: ShieldIcon,
+        title: 'Situações de Consulta'
+      },
+      {
+        href: '/app/specialtyTypes',
+        icon: PlusSquareIcon,
+        title: 'Tipos de Especialidade'
+      },
+      {
+        href: '/app/consultationTypes',
+        icon: ArchiveIcon,
+        title: 'Tipos de Consulta'
+      },
+      {
+        href: '/app/settings',
+        icon: SettingsIcon,
+        title: 'Configurações'
+      }
+  ];
+  } else {
+    items = [
+      {
+        href: '/app/dashboard',
+        icon: BarChartIcon,
+        title: 'Dashboard'
+      },
+      {
+        href: '/app/calendar',
+        icon: CalendarIcon,
+        title: 'Agenda Médica'
+      },
+      {
+        href: '/app/pacients',
+        icon: UserPlusIcon,
+        title: 'Pacientes'
+      },
+      {
+        href: '/app/settings',
+        icon: SettingsIcon,
+        title: 'Configurações'
+      }];
+
+  }
+
+  useEffect(() => {
+    
+    try {
+      let usuario = null;
+      if ( localStorage.getItem('app_token')) { 
+        usuario = jwt_decode(localStorage.getItem('app_token'));
+      }
+      if(usuario === null)
+        navigate('../login', { replace: true });
+    } catch(e) {
+      navigate('../login', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (openMobile && onMobileClose) {

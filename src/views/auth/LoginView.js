@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
@@ -15,6 +15,8 @@ import {
 //import FacebookIcon from 'src/icons/Facebook';
 import GoogleIcon from 'src/icons/Google';
 import Page from 'src/components/Page';
+import api  from '../../utils/api';
+import MessageDiaglog from '../../components/MessageDialog';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -28,6 +30,7 @@ const useStyles = makeStyles((theme) => ({
 const LoginView = () => {
   const classes = useStyles();
   const navigate = useNavigate();
+  const childRef = useRef();
 
   return (
     <Page className={classes.root} title="Login">
@@ -40,15 +43,33 @@ const LoginView = () => {
         <Container maxWidth="sm">
           <Formik
             initialValues={{
-              email: 'demo@devias.io',
-              password: 'Password123'
+              email: 'admin@admin.com',
+              senha: '123'
             }}
             validationSchema={Yup.object().shape({
               email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-              password: Yup.string().max(255).required('Password is required')
+              senha: Yup.string().max(255).required('Password is required')
             })}
-            onSubmit={() => {
-              navigate('/app/dashboard', { replace: true });
+            onSubmit={async (values) => {
+              let jwt = null;
+              await api.post(`http://localhost:3001/login`, `{"login":"${values.email}", "senha":"${values.senha}"}`,
+                  {
+                    headers: { 'Content-Type': 'application/json' },
+                    observe: 'response',
+                  },
+                )
+                .then((response) => {
+                  jwt = response.data.token;
+                  localStorage.setItem('app_token', jwt);
+                })
+                .catch((error) => {
+                    childRef.current.handleOpenMessage('Usuário ou senha inválido(s)', 'error');
+                });
+          
+              if (jwt) {
+                navigate('/app/dashboard', { replace: true });
+              }              
+              
             }}
           >
             {({
@@ -131,16 +152,15 @@ const LoginView = () => {
                   variant="outlined"
                 />
                 <TextField
-                  error={Boolean(touched.password && errors.password)}
+                  error={Boolean(touched.senha && errors.senha)}
                   fullWidth
-                  helperText={touched.password && errors.password}
+                  helperText={touched.senha && errors.senha}
                   label="Senha"
                   margin="normal"
                   name="senha"
-                  onBlur={handleBlur}
                   onChange={handleChange}
                   type="password"
-                  value={values.password}
+                  value={values.senha}
                   variant="outlined"
                 />
                 <Box my={2}>
@@ -171,6 +191,7 @@ const LoginView = () => {
           </Formik>
         </Container>
       </Box>
+      <MessageDiaglog ref={childRef} />
     </Page>
   );
 };

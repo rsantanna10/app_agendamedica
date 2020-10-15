@@ -6,6 +6,7 @@ import {
   Grid,
   makeStyles
 } from '@material-ui/core';
+import jwt_decode from "jwt-decode";
 import Page from 'src/components/Page';
 import Results from './Results';
 import Details from './Details';
@@ -25,13 +26,14 @@ const Paciente = () => {
   const classes = useStyles();
   const [pacients, setPacients] = useState([]);
   const childRef = useRef();
+  const usuario = jwt_decode(localStorage.getItem('app_token'));
 
   useEffect(() => {
     getPacientes();
   }, []);
 
   const getPacientes = async() => {
-    const response = await api.get('/paciente/user/1');
+    const response = await api.get(`/paciente/user/${usuario.id}`);
     setPacients(response.data);
   }
 
@@ -40,12 +42,13 @@ const Paciente = () => {
   }
 
   const OnEdit = (values) => {
+    values.dataNascimento = values.dataNascimento.substring(0, 10);
     childRef.current.handleSetValues(values);
   }
 
   return (
     <Page className={classes.root} title="Pacientes">
-      <Container maxWidth="lg">
+      <Container maxWidth="xl">
         <Box display="flex" justifyContent="flex-end">
           <Button color="primary" variant="contained" onClick={onResetForm}>Adicionar Paciente</Button>
         </Box>

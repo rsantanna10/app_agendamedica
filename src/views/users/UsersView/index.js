@@ -39,7 +39,7 @@ const User = () => {
   }
 
   const OnEdit = (values) => {
-    console.log(values);
+    values.senha = '';
     childRef.current.handleSetValues(values);
   }
 

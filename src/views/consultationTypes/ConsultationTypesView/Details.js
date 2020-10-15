@@ -47,7 +47,7 @@ const ProfileDetails = forwardRef(({ className, getTipoConsulta, ...rest }, ref)
   useImperativeHandle(ref, () => ({
 
     handleResetForm() {
-      setValues({ descricao: ''});
+      setValues({ descricao: '', cor:''});
     },
     handleSetValues(values) {
       setValues({
