@@ -37,7 +37,7 @@ const LoginView = () => {
 
   const responseGoogle = async (response) => {
     let jwt = null;
-                await api.post(`http://localhost:3001/loginGoogle`, `{"login":"${response.email}"}`,
+                await api.post(`/loginGoogle`, `{"login":"${response.email}"}`,
                     {
                       headers: { 'Content-Type': 'application/json' },
                       observe: 'response',
@@ -76,12 +76,7 @@ const LoginView = () => {
             })}
             onSubmit={async (values) => {
               let jwt = null;
-              await api.post(`http://localhost:3001/login`, `{"login":"${values.email}", "senha":"${values.senha}"}`,
-                  {
-                    headers: { 'Content-Type': 'application/json' },
-                    observe: 'response',
-                  },
-                )
+              await api.post('/login', `{"login":"${values.email}", "senha":"${values.senha}"}`)
                 .then((response) => {
                   jwt = response.data.token;
                   localStorage.setItem('app_token', jwt);
