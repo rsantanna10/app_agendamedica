@@ -12,8 +12,6 @@ import {
   Typography,
   makeStyles
 } from '@material-ui/core';
-//import FacebookIcon from 'src/icons/Facebook';
-import GoogleIcon from 'src/icons/Google';
 import Page from 'src/components/Page';
 import api  from '../../utils/api';
 import MessageDiaglog from '../../components/MessageDialog';
@@ -48,7 +46,7 @@ const LoginView = () => {
                     localStorage.setItem('app_token', jwt);
                   })
                   .catch((error) => {
-                      childRef.current.handleOpenMessage('Usuário ou senha inválido(s)', 'error');
+                      //childRef.current.handleOpenMessage('Usuário ou senha inválido(s)', 'error');
                   });
             
                 if (jwt) {
@@ -76,12 +74,12 @@ const LoginView = () => {
             })}
             onSubmit={async (values) => {
               let jwt = null;
-              await api.post('/login', `{"login":"${values.email}", "senha":"${values.senha}"}`)
-                .then((response) => {
+              await api.post('/login', `{"login":"${values.email}", "senha":"${values.senha}"}`, {
+                headers: { 'Content-Type': 'application/json' }
+                }).then((response) => {
                   jwt = response.data.token;
                   localStorage.setItem('app_token', jwt);
-                })
-                .catch((error) => {
+                }).catch((error) => {
                     childRef.current.handleOpenMessage('Usuário ou senha inválido(s)', 'error');
                 });
           
@@ -113,22 +111,6 @@ const LoginView = () => {
                   container
                   spacing={3}
                 >
-                  {/* <Grid
-                    item
-                    xs={12}
-                    md={6}
-                  >
-                    <Button
-                      color="primary"
-                      fullWidth
-                      startIcon={<FacebookIcon />}
-                      onClick={handleSubmit}
-                      size="large"
-                      variant="contained"
-                    >
-                      Login com Facebook
-                    </Button>
-                  </Grid> */}
                   <Grid item xs={12} md={12} align="center">
                   <GoogleLogin fullWidth clientId="38928079281-rqh60da8st1qvlajgpgdc56sb5h78hf4.apps.googleusercontent.com"
                                buttonText="Login com Google"
