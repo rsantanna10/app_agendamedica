@@ -20,7 +20,9 @@ import { withStyles } from '@material-ui/core/styles';
 import { 
   Add as AddIcon, 
   Search, 
-  Close
+  Close,
+  ContactPhone,
+  AddCircleOutline
 } from '@material-ui/icons';
 import {
   FormControl,
@@ -43,6 +45,7 @@ import {
 import { connectProps } from '@devexpress/dx-react-core';
 import { KeyboardDateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
+import Grid from '@material-ui/core/Grid';
 
 import Page from 'src/components/Page';
 import api from '../../../utils/api';
@@ -145,10 +148,13 @@ class AppointmentFormContainerBasic extends React.PureComponent {
       dataInicioAtendimento: appointment.startDate,
       dataFimAtendimento: appointment.endDate,
       telefone: appointment.telefone,
-      observacao: appointment.observacao     
+      observacao: appointment.observacao
     }
 
-    console.log(param);
+    appointment.title = appointment.nome.split(' ').length > 1 ?  appointment.nome.split(' ')[0] + ' ' + appointment.nome.split(' ')[1] : appointment.nome.split(' ')[0];
+    appointment.tipoProcedimento = appointment.tipoEventoId === 1 ? 'Agendamento' : 
+                                   appointment.tipoEventoId === 2 ? 'Reagendamento' : 
+                                   appointment.tipoEventoId === 3 ? 'Revisão' : '';                                                    
     
     if (type === 'changed' || type === 'deleted') {
       if (type === 'changed') {
@@ -395,7 +401,12 @@ class Calendar extends React.PureComponent {
                                                 data: response.data.map(appointment => (
                                                   { 
                                                     ...appointment, 
+                                                    title: appointment.nome.split(' ').length > 1 ?  appointment.nome.split(' ')[0] + ' ' + appointment.nome.split(' ')[1] :  
+                                                                                                     appointment.nome.split(' ')[0] ,
                                                     paciente: appointment.nome, 
+                                                    tipoProcedimento: appointment.tipoEventoId === 1 ? 'Agendamento' : 
+                                                                      appointment.tipoEventoId === 2 ? 'Reagendamento' : 
+                                                                      appointment.tipoEventoId === 3 ? 'Revisão' : '',
                                                     startDate: appointment.dataInicioAtendimento, 
                                                     endDate: appointment.dataFimAtendimento,
                                                     tipoConsultaId: appointment.tipoEventoId })) }));    
@@ -492,14 +503,44 @@ class Calendar extends React.PureComponent {
     } = this.state;
     const { classes } = this.props;
 
+    const Content = withStyles({ name: 'Content' })(({
+      children, appointmentData, classes, ...restProps
+    }) => (
+      <AppointmentTooltip.Content {...restProps} appointmentData={appointmentData}>
+        <Grid container alignItems="center">
+          <Grid item xs={2} className="tooltip-icon">
+            <AddCircleOutline className={classes.icon} />
+          </Grid>
+          <Grid item xs={10}>
+            <span>{appointmentData.tipoProcedimento}</span>
+          </Grid>
+        </Grid>
+        <Grid container alignItems="center">
+          <Grid item xs={2} className="tooltip-icon">
+            <ContactPhone className={classes.icon} />
+          </Grid>
+          <Grid item xs={10}>
+            <span>{appointmentData.telefone}</span>
+          </Grid>
+        </Grid>
+        <Grid container alignItems="right">
+          <Grid item xs={2} className="tooltip-icon">
+            Obs.:
+          </Grid>
+          <Grid item xs={10}>
+            <span>{appointmentData.observacao}</span>
+          </Grid>
+        </Grid>
+      </AppointmentTooltip.Content>
+    ));
+  
+
     return (
       <Page className={classes.root} title="Agenda Médica">
         <br /><br /><br />
         <Container maxWidth="xl">
           <Paper>
-            <Scheduler
-              data={data}
-            >
+            <Scheduler data={data}>
               <ViewState
                 currentDate={currentDate}
                 defaultCurrentViewName="Week"
@@ -522,6 +563,7 @@ class Calendar extends React.PureComponent {
               <EditRecurrenceMenu />              
               <Appointments />
               <AppointmentTooltip
+                contentComponent={Content}
                 showOpenButton
                 showCloseButton
                 showDeleteButton
