@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import jwt_decode from "jwt-decode";
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import { v4 as uuid } from 'uuid';
 import * as moment from 'moment';
 import 'moment/locale/pt-br';
 import {
@@ -39,7 +38,7 @@ const LatestProducts = ({ className, ...rest }) => {
       setEventos(result.data);
     };
     getData();
-  });
+  },[]);
 
   return (
     <Card

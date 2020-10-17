@@ -8,7 +8,7 @@ import Page from 'src/components/Page';
 import LatestOrders from './LatestOrders';
 import NextConsultation from './NextConsultation';
 import ConsultationsPerMonth from './ConsultationsPerMonth';
-import TrafficByDevice from './TrafficByDevice';
+import ConsultationType from './ConsultationType';
 import QtdPacients from './QtdPacients';
 
 const useStyles = makeStyles((theme) => ({
@@ -31,7 +31,7 @@ const Dashboard = () => {
             <ConsultationsPerMonth />
           </Grid>
           <Grid item lg={4} md={6} xl={3} xs={12}>
-            <TrafficByDevice />
+            <ConsultationType />
           </Grid>
           <Grid item lg={3} md={3} xl={3} xs={12}>
             <NextConsultation />

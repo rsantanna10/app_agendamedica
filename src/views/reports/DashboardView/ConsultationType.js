@@ -1,5 +1,6 @@
 //Agendamentos x Reagendamentos x Cancelamentos
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import jwt_decode from "jwt-decode";
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { Doughnut } from 'react-chartjs-2';
@@ -14,6 +15,7 @@ import {
   makeStyles,
   useTheme
 } from '@material-ui/core';
+import api from '../../../utils/api';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -21,14 +23,33 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-const TrafficByDevice = ({ className, ...rest }) => {
+const ConsultationType = ({ className, ...rest }) => {
   const classes = useStyles();
   const theme = useTheme();
+  const [types, setTypes] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [totalAg, setTotalAg] = useState(0);
+  const [totalRe, setTotalRe] = useState(0);
+  const [totalCa, setTotalCa] = useState(0);
+
+  
+  useEffect(() => {    
+    const getData = async () => {
+      const usuario = jwt_decode(localStorage.getItem('app_token'));
+      const result = await api.get(`/evento/${usuario.id}/pct`);
+      setTypes(result.data);
+      setTotal(result.data.map(x => x.total).reduce((a, b) => a + b, 0));
+      setTotalAg(result.data.filter(x => x.tipo_evento_id === 1)[0].total);
+      setTotalRe(result.data.filter(x => x.tipo_evento_id === 2)[0].total);
+      setTotalCa(result.data.filter(x => x.tipo_evento_id === 3)[0].total);
+    };
+    getData();
+  },[]);
 
   const data = {
     datasets: [
       {
-        data: [63, 15, 22],
+        data: types.map(x => x.total),
         backgroundColor: [
           colors.indigo[500],
           colors.orange[600],
@@ -67,17 +88,17 @@ const TrafficByDevice = ({ className, ...rest }) => {
   const devices = [
     {
       title: 'Agendamentos',
-      value: 63,
+      value:  Math.round(totalAg / total * 100) - 1,
       color: colors.indigo[500]
     },
     {
       title: 'Reagendamentos',
-      value: 15,
+      value: Math.round(totalRe / total * 100),
       color: colors.orange[600]      
     },
     {
       title: 'Cancelamentos',
-      value: 23,
+      value: Math.round(totalCa / total * 100),
       color: colors.red[600]      
     }
   ];
@@ -135,8 +156,8 @@ const TrafficByDevice = ({ className, ...rest }) => {
   );
 };
 
-TrafficByDevice.propTypes = {
+ConsultationType.propTypes = {
   className: PropTypes.string
 };
 
-export default TrafficByDevice;
+export default ConsultationType;
