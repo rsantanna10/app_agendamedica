@@ -39,9 +39,9 @@ const ConsultationType = ({ className, ...rest }) => {
       const result = await api.get(`/evento/${usuario.id}/pct`);
       setTypes(result.data);
       setTotal(result.data.map(x => x.total).reduce((a, b) => a + b, 0));
-      setTotalAg(result.data.filter(x => x.tipo_evento_id === 1)[0].total);
-      setTotalRe(result.data.filter(x => x.tipo_evento_id === 2)[0].total);
-      setTotalCa(result.data.filter(x => x.tipo_evento_id === 3)[0].total);
+      setTotalAg(result.data.filter(x => x.tipo_evento_id === 1).length === 0 ? 0 : result.data.filter(x => x.tipo_evento_id === 1)[0].total);
+      setTotalRe(result.data.filter(x => x.tipo_evento_id === 2).length === 0 ? 0 : result.data.filter(x => x.tipo_evento_id === 2)[0].total);
+      setTotalCa(result.data.filter(x => x.tipo_evento_id === 3).length === 0 ? 0 : result.data.filter(x => x.tipo_evento_id === 3)[0].total);
     };
     getData();
   },[]);
@@ -88,17 +88,17 @@ const ConsultationType = ({ className, ...rest }) => {
   const devices = [
     {
       title: 'Agendamentos',
-      value:  Math.round(totalAg / total * 100) - 1,
+      value:  totalAg === 0 ? 0 : Math.round(totalAg / total * 100),
       color: colors.indigo[500]
     },
     {
       title: 'Reagendamentos',
-      value: Math.round(totalRe / total * 100),
+      value: totalRe === 0 ? 0 : Math.round(totalRe / total * 100),
       color: colors.orange[600]      
     },
     {
       title: 'Cancelamentos',
-      value: Math.round(totalCa / total * 100),
+      value: totalCa === 0 ? 0 : Math.round(totalCa / total * 100),
       color: colors.red[600]      
     }
   ];
