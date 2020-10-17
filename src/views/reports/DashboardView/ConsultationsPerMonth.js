@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { Bar } from 'react-chartjs-2';
+import * as moment from 'moment';
+import 'moment/locale/pt-br';
 import {
   Box,
   Card,
@@ -12,6 +14,8 @@ import {
   makeStyles,
   colors
 } from '@material-ui/core';
+import jwt_decode from "jwt-decode";
+import api from '../../../utils/api';
 
 const useStyles = makeStyles(() => ({
   root: {}
@@ -20,15 +24,27 @@ const useStyles = makeStyles(() => ({
 const Sales = ({ className, ...rest }) => {
   const classes = useStyles();
   const theme = useTheme();
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    
+    const getData = async () => {
+      const usuario = jwt_decode(localStorage.getItem('app_token'));
+      const result = await api.get(`/evento/${usuario.id}/qtd`);
+      setEvents(result.data);
+    };
+  
+    getData();
+  },[]);
 
   const data = {
     datasets: [
       {
         backgroundColor: colors.indigo[500],
-        data: [18, 5, 19, 27, 29, 19, 20]
+        data: events.map(x =>  x.total)
       }
     ],
-    labels: ['1 Out', '2 Out', '3 Out', '4 Out', '5 Out', '6 Out']
+    labels: events.map(x => moment(x.data_inicio_atendimento).locale('pt-br').format('D MMM'))
   };
 
   const options = {

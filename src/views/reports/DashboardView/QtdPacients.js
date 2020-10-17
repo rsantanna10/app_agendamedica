@@ -32,7 +32,7 @@ const Sales = ({ className, ...rest }) => {
     
     const getData = async () => {
       const usuario = jwt_decode(localStorage.getItem('app_token'));
-      const result = await api.get(`/paciente/${usuario.id}/qtd/10`);
+      const result = await api.get(`/paciente/${usuario.id}/qtd`);
       setPacients(result.data);
     };
   
