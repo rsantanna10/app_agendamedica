@@ -31,9 +31,9 @@ const ProfileDetails = forwardRef(({ className, getPacientes, ...rest }, ref) =>
     usuarioId: usuario.id,
     nome: '',
     cpf: '',
-    dataNascimento: '',
+    dataNascimento: null,
     sexo: null,
-    email: '',
+    email: null,
     telefone: ''
   };
   

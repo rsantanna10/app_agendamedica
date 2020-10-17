@@ -17,7 +17,6 @@ import {
   BarChart as BarChartIcon,
   Archive as ArchiveIcon,
   Settings as SettingsIcon,
-  ShoppingBag as ShoppingBagIcon,
   PlusSquare as PlusSquareIcon,
   UserPlus as UserPlusIcon,
   Users as UsersIcon,

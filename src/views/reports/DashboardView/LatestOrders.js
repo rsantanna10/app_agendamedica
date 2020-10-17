@@ -1,37 +1,22 @@
-import React, { useState } from 'react';
+//Ultimos pacientes cadastrados
+import React, { useState, useEffect } from 'react';
+import jwt_decode from "jwt-decode";
 import clsx from 'clsx';
-import moment from 'moment';
-import { v4 as uuid } from 'uuid';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import PropTypes from 'prop-types';
 import {
   Box,
-  Button,
   Card,
   CardHeader,
-  Chip,
   Divider,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
-  TableSortLabel,
-  Tooltip,
   makeStyles
 } from '@material-ui/core';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-
-const data = [
-  {
-    id: uuid(),
-    nome: 'Renato'
-  },
-  {
-    id: uuid(),
-    nome: 'Luciana'
-  }
-];
+import api from '../../../utils/api';
 
 const useStyles = makeStyles(() => ({
   root: {},
@@ -42,7 +27,17 @@ const useStyles = makeStyles(() => ({
 
 const LatestOrders = ({ className, ...rest }) => {
   const classes = useStyles();
-  const [pacients] = useState(data);
+  const [pacients, setPacients] = useState([]);
+
+  useEffect(() => {
+    
+    const getData = async () => {
+      const usuario = jwt_decode(localStorage.getItem('app_token'));
+      const result = await api.get(`/paciente/${usuario.id}/last/7`);
+      setPacients(result.data);
+    };
+    getData();
+},[]);
 
   return (
     <Card

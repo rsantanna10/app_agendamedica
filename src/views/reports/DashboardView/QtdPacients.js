@@ -1,10 +1,13 @@
-import React from 'react';
+//Quantidades de Pacientes cadastrados
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { Line } from 'react-chartjs-2';
+import jwt_decode from "jwt-decode";
+import * as moment from 'moment';
+import 'moment/locale/pt-br';
 import {
   Box,
-  Button,
   Card,
   CardContent,
   CardHeader,
@@ -13,25 +16,37 @@ import {
   makeStyles,
   colors
 } from '@material-ui/core';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
+import api from '../../../utils/api';
 
 const useStyles = makeStyles(() => ({
   root: {}
 }));
 
+
 const Sales = ({ className, ...rest }) => {
   const classes = useStyles();
   const theme = useTheme();
+  const [pacients, setPacients] = useState([]);
+
+  useEffect(() => {
+    
+    const getData = async () => {
+      const usuario = jwt_decode(localStorage.getItem('app_token'));
+      const result = await api.get(`/paciente/${usuario.id}/qtd/10`);
+      setPacients(result.data);
+    };
+  
+    getData();
+  },[]);
 
   const data = {
     datasets: [
       {
         backgroundColor: colors.indigo[500],
-        data: [18, 5, 19, 27, 29, 19, 20]
+        data: pacients.map(x =>  x.total)
       }
     ],
-    labels: ['1 Out', '2 Out', '3 Out', '4 Out', '5 Out', '6 Out']
+    labels: pacients.map(x => moment(x.created_at).locale('pt-br').format('D MMM'))
   };
 
   const options = {

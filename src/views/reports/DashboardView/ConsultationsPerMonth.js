@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import { Bar } from 'react-chartjs-2';
 import {
   Box,
-  Button,
   Card,
   CardContent,
   CardHeader,
@@ -13,8 +12,6 @@ import {
   makeStyles,
   colors
 } from '@material-ui/core';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 
 const useStyles = makeStyles(() => ({
   root: {}

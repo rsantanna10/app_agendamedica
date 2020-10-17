@@ -39,8 +39,7 @@ import {
   DialogTitle, 
   Fab, 
   IconButton,
-  MenuItem,
-  Hidden
+  MenuItem
 } from '@material-ui/core';
 import { connectProps } from '@devexpress/dx-react-core';
 import { KeyboardDateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
@@ -151,10 +150,10 @@ class AppointmentFormContainerBasic extends React.PureComponent {
       observacao: appointment.observacao
     }
 
-    appointment.title = appointment.nome.split(' ').length > 1 ?  appointment.paciente.split(' ')[0] + ' ' + appointment.paciente.split(' ')[1] : appointment.paciente.split(' ')[0];
-    appointment.tipoProcedimento = appointment.tipoEventoId === 1 ? 'Agendamento' : 
-                                   appointment.tipoEventoId === 2 ? 'Reagendamento' : 
-                                   appointment.tipoEventoId === 3 ? 'Revisão' : '';                                                    
+    appointment.title = appointment.paciente.split(' ').length > 1 ?  appointment.paciente.split(' ')[0] + ' ' + appointment.paciente.split(' ')[1] : appointment.paciente;
+    appointment.tipoProcedimento = appointment.tipoConsultaId === 1 ? 'Agendamento' : 
+                                   appointment.tipoConsultaId === 2 ? 'Reagendamento' : 
+                                   appointment.tipoConsultaId === 3 ? 'Revisão' : '';                                                    
     
     if (type === 'changed' || type === 'deleted') {
       if (type === 'changed') {
@@ -165,11 +164,9 @@ class AppointmentFormContainerBasic extends React.PureComponent {
       //Realizando a persistência
       param.id = appointment.id;
       await api.patch(`/evento/${appointment.id}` , param);
-      console.log(param);
 
       commitChanges({ [type]: { [appointment.id]: appointment } });
     } else {
-      console.log(param)
       const response = await api.post('/evento/', param);
       appointment.id = response.data.id;
 
@@ -217,8 +214,6 @@ class AppointmentFormContainerBasic extends React.PureComponent {
 
     const searchPaciente = async () => {
       const cpf = displayAppointmentData['cpf'];
-         
-      
 
       const result = await api.get(`/paciente/cpf/${cpf}`);
       if (result.data !== '') {
@@ -398,7 +393,9 @@ class Calendar extends React.PureComponent {
     this.appointmentForm.update();    
   }
   async componentDidMount() {
-    await api.get('/evento').then(response =>  this.setState({
+    const usuario = jwt_decode(localStorage.getItem('app_token'));
+    
+    await api.get(`/evento/${usuario.id}`).then(response =>  this.setState({
                                                 data: response.data.map(appointment => (
                                                   { 
                                                     ...appointment, 
@@ -411,13 +408,11 @@ class Calendar extends React.PureComponent {
                                                     startDate: appointment.dataInicioAtendimento, 
                                                     endDate: appointment.dataFimAtendimento,
                                                     tipoConsultaId: appointment.tipoEventoId })) }));    
-    const usuario = jwt_decode(localStorage.getItem('app_token'));
+    
     const result = await api.get(`/configuracao/usuario/${usuario.id}`);
 
     if(result.data.length > 0) {
       let data = result.data[0];
-      console.log(data)
-
       this.setState({ startDayHour: parseInt(data.horaInicio.split(':')[0]),
                       endDayHour: parseInt(data.horaFim.split(':')[0]),
                       interval: parseInt(data.intervalo)});
@@ -555,7 +550,7 @@ class Calendar extends React.PureComponent {
         
         <Container maxWidth="xl">
           <Paper>
-            <Scheduler data={data}>
+            <Scheduler data={data} locale="pt-BR">
               <ViewState
                 currentDate={currentDate}
                 defaultCurrentViewName="Week"
@@ -566,7 +561,11 @@ class Calendar extends React.PureComponent {
                 onEditingAppointmentChange={this.onEditingAppointmentChange}
                 onAddedAppointmentChange={this.onAddedAppointmentChange}
               />
-              <DayView displayName="Dia" />
+              <DayView displayName="Dia" 
+                startDayHour={startDayHour}
+                endDayHour={endDayHour}
+                cellDuration={interval}
+              />
               <WeekView displayName="Semana"
                 startDayHour={startDayHour}
                 endDayHour={endDayHour}
@@ -575,7 +574,7 @@ class Calendar extends React.PureComponent {
               <MonthView displayName="Mês" />
               <Toolbar />
               <DateNavigator />
-              <TodayButton />
+              <TodayButton displayName="Hoje" />
               <EditRecurrenceMenu />              
               <Appointments />
               <AppointmentTooltip
