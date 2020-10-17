@@ -1,4 +1,5 @@
 import * as React from 'react';
+import jwt_decode from "jwt-decode";
 import Paper from '@material-ui/core/Paper';
 import { ViewState, EditingState } from '@devexpress/dx-react-scheduler';
 import {
@@ -36,7 +37,8 @@ import {
   DialogTitle, 
   Fab, 
   IconButton,
-  MenuItem
+  MenuItem,
+  Hidden
 } from '@material-ui/core';
 import { connectProps } from '@devexpress/dx-react-core';
 import { KeyboardDateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
@@ -44,7 +46,6 @@ import MomentUtils from '@date-io/moment';
 
 import Page from 'src/components/Page';
 import api from '../../../utils/api';
-import { appointments } from './data-demo/appointments';
 
 const containerStyles = theme => ({
   container: {
@@ -112,7 +113,7 @@ class AppointmentFormContainerBasic extends React.PureComponent {
 
     this.changeAppointment = this.changeAppointment.bind(this);
     this.commitAppointment = this.commitAppointment.bind(this);
-    api.get('/tipoConsulta').then(response =>  this.setState({ listTipoConsulta: response.data }));
+    api.get('/tipoConsulta').then(response =>  this.setState({ listTipoConsulta: response.data }));    
   }
 
   changeAppointment({ field, changes }) {
@@ -125,23 +126,54 @@ class AppointmentFormContainerBasic extends React.PureComponent {
     });
   }
 
-  commitAppointment(type) {
+  async commitAppointment(type) {
     const { commitChanges } = this.props;
     const appointment = {
       ...this.getAppointmentData(),
       ...this.getAppointmentChanges(),
     };
-    if (type === 'deleted') {
-      commitChanges({ [type]: appointment.id });
-    } else if (type === 'changed') {
+    const usuario = jwt_decode(localStorage.getItem('app_token'));
+
+    let param = {
+      id: null,
+      usuarioId: usuario.id,
+      tipoEventoId: appointment.tipoConsultaId, 
+      pacienteId: appointment.pacienteId,  
+      situacaoEventoId: 1,//Criado
+      nome: appointment.paciente,
+      cpf: appointment.cpf,
+      dataInicioAtendimento: appointment.startDate,
+      dataFimAtendimento: appointment.endDate,
+      telefone: appointment.telefone,
+      observacao: appointment.observacao     
+    }
+
+    console.log(param);
+    
+    if (type === 'changed' || type === 'deleted') {
+      if (type === 'changed') {
+        param.situacaoEventoId = 2;
+      } else {
+        param.situacaoEventoId = 3;
+      }
+      //Realizando a persistência
+      param.id = appointment.id;
+      await api.patch(`/evento/${appointment.id}` , param);
+      console.log(param);
+
       commitChanges({ [type]: { [appointment.id]: appointment } });
     } else {
+      console.log(param)
+      const response = await api.post('/evento/', param);
+      appointment.id = response.data.id;
+
       commitChanges({ [type]: appointment });
+
     }
+
     this.setState({
       appointmentChanges: {},
     });
-    console.log(this.state.appointmentChanges);
   }
 
   render() {
@@ -166,16 +198,31 @@ class AppointmentFormContainerBasic extends React.PureComponent {
       ? () => this.commitAppointment('added')
       : () => this.commitAppointment('changed');
 
-    const textEditorProps = field => ({
+    const textEditorProps = (field, name) => ({
       variant: 'outlined',
       onChange: ({ target: change }) => this.changeAppointment({
         field: [field], changes: change.value,
       }),
       value: displayAppointmentData[field] || '',
-      label: field[0],
-      name: field[1],
-      className: classes.textField,
+      label: name,
+      name: field,
+      className: classes.textField,      
     });
+
+    const searchPaciente = async () => {
+      const cpf = displayAppointmentData['cpf'];
+         
+      
+
+      const result = await api.get(`/paciente/cpf/${cpf}`);
+      if (result.data !== '') {
+        const { id, nome, telefone} = result.data;
+
+        this.changeAppointment({ field: 'paciente', changes: nome });
+        this.changeAppointment({ field: 'pacienteId', changes: id });
+        this.changeAppointment({ field: 'telefone', changes: telefone });
+      }
+    };
 
     const pickerEditorProps = field => ({
       className: classes.picker,
@@ -210,20 +257,21 @@ class AppointmentFormContainerBasic extends React.PureComponent {
           <div className={classes.content}>
             <div className={classes.wrapper}>
               <FormControl className={classes.formControl} fullWidth>
-                <InputLabel id="tipoConsultaId">Tipo de Especialidade</InputLabel>
-                <Select labelId="tipoConsultaId" {...textEditorProps(['Tipo Consulta', 'tipoConsultaId'])}>
+                <InputLabel id="tipoConsultaId">Tipo de Consulta</InputLabel>
+                <Select labelId="tipoConsultaId" {...textEditorProps('tipoConsultaId', 'Tipo Consulta')}>
                     {listTipoConsulta.map(item => <MenuItem value={item.id}>{item.descricao}</MenuItem>)}
                 </Select>
               </FormControl>
             </div>
             <div className={classes.wrapper}>
               <TextField
-                {...textEditorProps(['C.P.F.', 'cpf'])}
+                {...textEditorProps('cpf', 'C.P.F.')}
               /> &nbsp;{' '}&nbsp;
-              <Search className={classes.icon} color="action" onClick={()=> alert('Busca a porra do paciente')}/>
+              <Search className={classes.icon} color="action" onClick={searchPaciente}/>
+              <TextField style={{display: "none"}} {...textEditorProps('pacienteId', 'pacienteId')} />
             </div>
             <div className={classes.wrapper}>
-              <TextField {...textEditorProps(['Paciente', 'paciente'])}/>
+              <TextField {...textEditorProps('paciente', 'Paciente')}/>
             </div>
             <div className={classes.wrapper}>
               <MuiPickersUtilsProvider utils={MomentUtils}>
@@ -232,10 +280,10 @@ class AppointmentFormContainerBasic extends React.PureComponent {
               </MuiPickersUtilsProvider>
             </div>
             <div className={classes.wrapper}>
-              <TextField {...textEditorProps(['Telefone', 'telefone'])} />
+              <TextField {...textEditorProps('telefone', 'Telefone')} />
             </div>
             <div className={classes.wrapper}>
-              <TextField {...textEditorProps(['Observação', 'observacao'])} multiline rows="6"/>
+              <TextField {...textEditorProps('observacao', 'Observação')} multiline rows="6"/>
             </div>
           </div>
           <div className={classes.buttonGroup}>
@@ -285,8 +333,8 @@ class Calendar extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      data: appointments,
-      currentDate: '2018-06-27',
+      data: [],//appointments,
+      currentDate: new Date(),
       confirmationVisible: false,
       editingFormVisible: false,
       deletedAppointmentId: undefined,
@@ -326,7 +374,7 @@ class Calendar extends React.PureComponent {
             isNewAppointment: false,
           });
         }
-      };
+      };     
 
       return {
         visible: editingFormVisible,
@@ -340,7 +388,17 @@ class Calendar extends React.PureComponent {
   }
 
   componentDidUpdate() {
-    this.appointmentForm.update();
+    this.appointmentForm.update();    
+  }
+  async componentDidMount() {
+    await api.get('/evento').then(response =>  this.setState({
+                                                data: response.data.map(appointment => (
+                                                  { 
+                                                    ...appointment, 
+                                                    paciente: appointment.nome, 
+                                                    startDate: appointment.dataInicioAtendimento, 
+                                                    endDate: appointment.dataFimAtendimento,
+                                                    tipoConsultaId: appointment.tipoEventoId })) }));    
   }
 
   onEditingAppointmentChange(editingAppointment) {
@@ -377,6 +435,27 @@ class Calendar extends React.PureComponent {
   commitDeletedAppointment() {
     this.setState((state) => {
       const { data, deletedAppointmentId } = state;
+
+      const upateState = async () => {
+        const app =  data.filter(appointment => appointment.id === deletedAppointmentId)[0];
+        let param = {
+          id: app.id,
+          tipoEventoId: app.tipoConsultaId, 
+          pacienteId: app.pacienteId,  
+          situacaoEventoId: 3,//Excluído
+          nome: app.paciente,
+          cpf: app.cpf,
+          dataInicioAtendimento: app.startDate,
+          dataFimAtendimento: app.endDate,
+          telefone: app.telefone,
+          observacao: app.observacao
+        }
+        //Realizando a persistência
+        await api.patch(`/evento/${app.id}`, param);
+      };
+
+      upateState();
+
       const nextData = data.filter(appointment => appointment.id !== deletedAppointmentId);
 
       return { data: nextData, deletedAppointmentId: null };
@@ -388,8 +467,7 @@ class Calendar extends React.PureComponent {
     this.setState((state) => {
       let { data } = state;
       if (added) {
-        const startingAddedId = data.length > 0 ? data[data.length - 1].id + 1 : 0;
-        data = [...data, { id: startingAddedId, ...added }];
+        data = [...data, { ...added }];
       }
       if (changed) {
         data = data.map(appointment => (
