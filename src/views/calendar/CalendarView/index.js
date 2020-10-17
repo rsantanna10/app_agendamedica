@@ -151,7 +151,7 @@ class AppointmentFormContainerBasic extends React.PureComponent {
       observacao: appointment.observacao
     }
 
-    appointment.title = appointment.nome.split(' ').length > 1 ?  appointment.nome.split(' ')[0] + ' ' + appointment.nome.split(' ')[1] : appointment.nome.split(' ')[0];
+    appointment.title = appointment.nome.split(' ').length > 1 ?  appointment.paciente.split(' ')[0] + ' ' + appointment.paciente.split(' ')[1] : appointment.paciente.split(' ')[0];
     appointment.tipoProcedimento = appointment.tipoEventoId === 1 ? 'Agendamento' : 
                                    appointment.tipoEventoId === 2 ? 'Reagendamento' : 
                                    appointment.tipoEventoId === 3 ? 'Revisão' : '';                                                    
@@ -349,6 +349,7 @@ class Calendar extends React.PureComponent {
       addedAppointment: {},
       startDayHour: 9,
       endDayHour: 19,
+      interval: 30,
       isNewAppointment: false,
     };
 
@@ -410,6 +411,18 @@ class Calendar extends React.PureComponent {
                                                     startDate: appointment.dataInicioAtendimento, 
                                                     endDate: appointment.dataFimAtendimento,
                                                     tipoConsultaId: appointment.tipoEventoId })) }));    
+    const usuario = jwt_decode(localStorage.getItem('app_token'));
+    const result = await api.get(`/configuracao/usuario/${usuario.id}`);
+
+    if(result.data.length > 0) {
+      let data = result.data[0];
+      console.log(data)
+
+      this.setState({ startDayHour: parseInt(data.horaInicio.split(':')[0]),
+                      endDayHour: parseInt(data.horaFim.split(':')[0]),
+                      interval: parseInt(data.intervalo)});
+                      
+    }
   }
 
   onEditingAppointmentChange(editingAppointment) {
@@ -500,6 +513,7 @@ class Calendar extends React.PureComponent {
       editingFormVisible,
       startDayHour,
       endDayHour,
+      interval
     } = this.state;
     const { classes } = this.props;
 
@@ -538,6 +552,7 @@ class Calendar extends React.PureComponent {
     return (
       <Page className={classes.root} title="Agenda Médica">
         <br /><br /><br />
+        
         <Container maxWidth="xl">
           <Paper>
             <Scheduler data={data}>
@@ -555,6 +570,7 @@ class Calendar extends React.PureComponent {
               <WeekView displayName="Semana"
                 startDayHour={startDayHour}
                 endDayHour={endDayHour}
+                cellDuration={interval}
               />
               <MonthView displayName="Mês" />
               <Toolbar />
