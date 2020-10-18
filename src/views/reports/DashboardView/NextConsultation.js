@@ -34,7 +34,7 @@ const LatestProducts = ({ className, ...rest }) => {
   useEffect(() => {    
     const getData = async () => {
       const usuario = jwt_decode(localStorage.getItem('app_token'));
-      const result = await api.get(`/evento/${usuario.id}/next/limit/8`);
+      const result = await api.get(`/evento/${usuario.id}/next/limit/6`);
       setEventos(result.data);
     };
     getData();

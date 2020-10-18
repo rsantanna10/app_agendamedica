@@ -42,7 +42,7 @@ const Paciente = () => {
   }
 
   const OnEdit = (values) => {
-    values.dataNascimento = values.dataNascimento.substring(0, 10);
+    values.dataNascimento = values.dataNascimento !== null ? values.dataNascimento.substring(0, 10) : '';
     childRef.current.handleSetValues(values);
   }
 

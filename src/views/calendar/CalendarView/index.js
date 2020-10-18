@@ -89,6 +89,7 @@ const containerStyles = theme => ({
   icon: {
     margin: theme.spacing(2, 0),
     marginRight: theme.spacing(2),
+    cursor: 'pointer'
   },
   textField: {
     width: '100%',

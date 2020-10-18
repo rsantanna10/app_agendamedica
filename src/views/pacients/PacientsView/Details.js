@@ -49,6 +49,8 @@ const ProfileDetails = forwardRef(({ className, getPacientes, ...rest }, ref) =>
   };
 
   const onSubmit = async () => {
+
+    values.dataNascimento = values.dataNascimento === '' ? null : values.dataNascimento;
     
     if(values.id === undefined) { 
       await api.post('/paciente', values);
@@ -97,7 +99,7 @@ const ProfileDetails = forwardRef(({ className, getPacientes, ...rest }, ref) =>
           </Grid>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="Birthday" 
+              <TextField fullWidth label="Data de Nascimento" 
                 name="dataNascimento"
                 type="date" 
                 onChange={handleChange} 

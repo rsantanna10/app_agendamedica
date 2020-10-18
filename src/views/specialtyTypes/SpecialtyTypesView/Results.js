@@ -3,6 +3,8 @@ import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import {
+  Box,
+  TextField,
   CardContent,
   Card,
   CardHeader,
@@ -16,7 +18,7 @@ import {
   makeStyles,
   IconButton
 } from '@material-ui/core';
-import {Delete as DeleteIcon, Edit as EditIcon} from '@material-ui/icons';
+import {Delete as DeleteIcon, Edit as EditIcon, Search} from '@material-ui/icons';
 import MessageDiaglog from '../../../components/MessageDialog';
 import api from '../../../utils/api';
 
@@ -24,6 +26,16 @@ const useStyles = makeStyles((theme) => ({
   root: {},
   avatar: {
     marginRight: theme.spacing(2)
+  },
+  wrapper: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: theme.spacing(1, 0)    
+  },
+  icon: {
+    margin: theme.spacing(2, 0),
+    marginRight: theme.spacing(2),
+    cursor: 'pointer'
   }
 }));
 
@@ -33,6 +45,7 @@ const Results = ({ onEdit, className, specialtyTypes, getTipoEspecialidade, ...r
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(0);
   const childRef = useRef();
+  const [descricao, setDescricao] = useState('');
 
   const handleLimitChange = (event) => {
     setLimit(event.target.value);
@@ -48,21 +61,33 @@ const Results = ({ onEdit, className, specialtyTypes, getTipoEspecialidade, ...r
     getTipoEspecialidade();
   }
 
+  const handlerSearch = () => {
+    if(descricao !== '')
+      specialtyTypes = specialtyTypes.filter(x => x.descricao === descricao);
+  }
+
   return (
     <>
     <Card className={clsx(classes.root, className)} {...rest} >
       <CardHeader title="Lista de Tipo de Especialidade" />
       <Divider />
       <PerfectScrollbar>
+        <Box display="flex" justifyContent="flex-end" >
+          <div className={classes.wrapper}>
+            <TextField label="Descrição" name="descricao" onChange={setDescricao} />&nbsp;{' '}&nbsp;
+            <Search className={classes.icon} color="action" onClick={handlerSearch}/>
+          </div>          
+        </Box>        
         <CardContent>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Descrição</TableCell>                
+                <TableCell>Descrição</TableCell>
+                <TableCell></TableCell>                
               </TableRow>
             </TableHead>
             <TableBody>
-              {specialtyTypes.slice(0, limit).map((specialtyType) => (
+              {specialtyTypes.slice(page * limit, page * limit + limit).map((specialtyType) => (
                 <TableRow hover key={specialtyType.id} selected={selectedCustomerIds.indexOf(specialtyType.id) !== -1}>
                   <TableCell>{specialtyType.descricao}</TableCell>
                   <TableCell  align="right" width="30%">

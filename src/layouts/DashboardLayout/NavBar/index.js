@@ -83,7 +83,7 @@ const NavBar = ({ onMobileClose, openMobile, history }) => {
       {
         href: '/app/consultationStatus',
         icon: ShieldIcon,
-        title: 'Situações de Consulta'
+        title: 'Situações da Consulta'
       },
       {
         href: '/app/specialtyTypes',
