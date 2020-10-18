@@ -18,9 +18,10 @@ import {
   makeStyles,
   IconButton
 } from '@material-ui/core';
-import { Delete as DeleteIcon, Edit as EditIcon, Search} from '@material-ui/icons';
+import { Delete as DeleteIcon, Edit as EditIcon, Search, Archive } from '@material-ui/icons';
 import MessageDiaglog from '../../../components/MessageDialog';
 import api from '../../../utils/api';
+import { CSVLink } from "react-csv";
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -46,6 +47,14 @@ const Results = ({ className, users, onEdit, getUsers, ...rest }) => {
   const [page, setPage] = useState(0);
   const childRef = useRef();
   const [descricao, setDescricao] = useState('');
+
+  const headers = [
+    { label: "Nome", key: "nome" },
+    { label: "Login", key: "login" },
+    { label: "Tipo de Especialiadade", key: "tipo_especialidades.descricao" },
+    { label: "Ativo", key: "ativo" },
+    { label: "Tipo de Usuário", key: "tipoUsuario" }
+  ];
 
   const handleLimitChange = (event) => {
     setLimit(event.target.value);
@@ -75,7 +84,8 @@ const Results = ({ className, users, onEdit, getUsers, ...rest }) => {
         <Box display="flex" justifyContent="flex-end" >
           <div className={classes.wrapper}>
             <TextField label="Login" name="descricao" onChange={setDescricao} />&nbsp;{' '}&nbsp;
-            <Search className={classes.icon} color="action" onClick={handlerSearch}/>
+            <Search className={classes.icon} color="action" onClick={handlerSearch}/>{' '}
+            <CSVLink className={classes.icon} color="action" data={users} headers={headers} separator={";"}><Archive/></CSVLink>
           </div>          
         </Box>  
         <CardContent>
