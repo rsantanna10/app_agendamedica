@@ -31,9 +31,9 @@ const ProfileDetails = forwardRef(({ className, getPacientes, ...rest }, ref) =>
     usuarioId: usuario.id,
     nome: '',
     cpf: '',
-    dataNascimento: null,
+    dataNascimento: '',
     sexo: null,
-    email: null,
+    email: '',
     telefone: ''
   };
   
@@ -51,6 +51,7 @@ const ProfileDetails = forwardRef(({ className, getPacientes, ...rest }, ref) =>
   const onSubmit = async () => {
 
     values.dataNascimento = values.dataNascimento === '' ? null : values.dataNascimento;
+    values.email = values.email === '' ? null : values.email;
     
     if(values.id === undefined) { 
       await api.post('/paciente', values);

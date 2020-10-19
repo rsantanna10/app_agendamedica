@@ -215,8 +215,9 @@ class AppointmentFormContainerBasic extends React.PureComponent {
 
     const searchPaciente = async () => {
       const cpf = displayAppointmentData['cpf'];
+      const usuario = jwt_decode(localStorage.getItem('app_token'));
 
-      const result = await api.get(`/paciente/cpf/${cpf}`);
+      const result = await api.get(`/paciente/usuario/${usuario.id}/cpf/${cpf}`);
       if (result.data !== '') {
         const { id, nome, telefone} = result.data;
 
