@@ -35,7 +35,8 @@ const LoginView = () => {
 
   const responseGoogle = async (response) => {
     let jwt = null;
-                await api.post(`/loginGoogle`, `{"login":"${response.email}"}`,
+    console.log(response);
+                await api.post(`/loginGoogle`, `{"login":"${response.profileObj.email}"}`,
                     {
                       headers: { 'Content-Type': 'application/json' },
                       observe: 'response',
