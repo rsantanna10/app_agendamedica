@@ -32,6 +32,7 @@ const LoginView = () => {
   const classes = useStyles();
   const navigate = useNavigate();
   const childRef = useRef();
+  window.localStorage.clear();
 
   const responseGoogle = async (response) => {
     let jwt = null;

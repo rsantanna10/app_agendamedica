@@ -22,6 +22,7 @@ import { Delete as DeleteIcon, Edit as EditIcon, Search, Archive } from '@materi
 import MessageDiaglog from '../../../components/MessageDialog';
 import api from '../../../utils/api';
 import { CSVLink } from "react-csv";
+import AlertDialog from '../../../components/AlertDialog';
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -46,7 +47,9 @@ const Results = ({ onEdit, className, specialtyTypes, getTipoEspecialidade, ...r
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(0);
   const childRef = useRef();
+  const chilRefAlert = useRef();
   const [descricao, setDescricao] = useState('');
+  const [specialtyTypeId, setSpecialtyTypeId] = useState(0);
 
   const headers = [
     { label: "Descrição", key: "descricao" }
@@ -60,16 +63,21 @@ const Results = ({ onEdit, className, specialtyTypes, getTipoEspecialidade, ...r
     setPage(newPage);
   };
 
+  const handleConfirm = async (id) => {
+    setSpecialtyTypeId(id);
+    chilRefAlert.current.handleClickOpen();
+  };
+
   const handleDelete = async (id) => {
     await api.delete('/tipoEspecialidade/' + id);
     childRef.current.handleOpenMessage('Tipo de Especialidade deletado com sucesso!', 'success');
     getTipoEspecialidade();
-  }
+  };
 
   const handlerSearch = () => {
     if(descricao !== '')
       specialtyTypes = specialtyTypes.filter(x => x.descricao === descricao);
-  }
+  };
 
   return (
     <>
@@ -98,7 +106,10 @@ const Results = ({ onEdit, className, specialtyTypes, getTipoEspecialidade, ...r
                   <TableCell>{specialtyType.descricao}</TableCell>
                   <TableCell  align="right" width="30%">
                     <IconButton onClick={() => onEdit(specialtyType)}><EditIcon color="primary" /></IconButton>|
-                    <IconButton onClick={() => handleDelete(specialtyType.id)}><DeleteIcon color="secondary"/></IconButton>
+                    <IconButton 
+                      onClick={() => handleConfirm(specialtyType.id)} >
+                        <DeleteIcon color="secondary"/>
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -116,6 +127,7 @@ const Results = ({ onEdit, className, specialtyTypes, getTipoEspecialidade, ...r
       />
     </Card>
     <MessageDiaglog ref={childRef} />
+    <AlertDialog ref={chilRefAlert} handleConfirm={() => handleDelete(specialtyTypeId)} />
     </>
   );
 };

@@ -22,6 +22,7 @@ import { Delete as DeleteIcon, Edit as EditIcon, Search, Archive } from '@materi
 import MessageDiaglog from '../../../components/MessageDialog';
 import api from '../../../utils/api';
 import { CSVLink } from "react-csv";
+import AlertDialog from '../../../components/AlertDialog';
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -46,7 +47,9 @@ const Results = ({ className, consultationStatus, onEdit, getSituacaoConsulta, .
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(0);
   const childRef = useRef();
+  const chilRefAlert = useRef();
   const [descricao, setDescricao] = useState('');
+  const [consultationStatusId, setConsultationStatusId] = useState(0);
 
   const headers = [
     { label: "Descrição", key: "descricao" }
@@ -60,16 +63,21 @@ const Results = ({ className, consultationStatus, onEdit, getSituacaoConsulta, .
     setPage(newPage);
   };
 
+  const handleConfirm = async (id) => {
+    setConsultationStatusId(id);
+    chilRefAlert.current.handleClickOpen();
+  };
+
   const handleDelete = async (id) => {
     await api.delete('/situacaoConsulta/' + id);
     childRef.current.handleOpenMessage('Situação da Consulta deletada com sucesso!', 'success');
     getSituacaoConsulta();
-  }
+  };
 
   const handlerSearch = () => {
     if(descricao !== '')
       consultationStatus = consultationStatus.filter(x => x.descricao === descricao);
-  }
+  };
 
   return (
     <>
@@ -98,7 +106,10 @@ const Results = ({ className, consultationStatus, onEdit, getSituacaoConsulta, .
                   <TableCell>{consultation.descricao}</TableCell>
                   <TableCell  align="right" width="30%">
                     <IconButton onClick={() => onEdit(consultation)}><EditIcon color="primary" /></IconButton>|
-                    <IconButton onClick={() => handleDelete(consultation.id)}><DeleteIcon color="secondary"/></IconButton>
+                    <IconButton 
+                      onClick={() => handleConfirm(consultation.id)} >
+                        <DeleteIcon color="secondary"/>
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -116,6 +127,7 @@ const Results = ({ className, consultationStatus, onEdit, getSituacaoConsulta, .
       />
     </Card>
     <MessageDiaglog ref={childRef} />
+    <AlertDialog ref={chilRefAlert} handleConfirm={() => handleDelete(consultationStatusId)} />
     </>
   );
 };

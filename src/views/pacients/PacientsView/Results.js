@@ -20,6 +20,7 @@ import {
 } from '@material-ui/core';
 import { Delete as DeleteIcon, Edit as EditIcon, Search, Archive } from '@material-ui/icons';
 import MessageDiaglog from '../../../components/MessageDialog';
+import AlertDialog from '../../../components/AlertDialog';
 import api from '../../../utils/api';
 import { CSVLink } from "react-csv";
 
@@ -46,7 +47,9 @@ const Results = ({ className, pacients, onEdit, getPacientes, ...rest }) => {
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(0);
   const childRef = useRef();
+  const chilRefAlert = useRef();
   const [descricao, setDescricao] = useState('');
+  const [pacientId, setPacientId] = useState(0);
 
   const headers = [
     { label: "Nome", key: "nome" },
@@ -64,6 +67,11 @@ const Results = ({ className, pacients, onEdit, getPacientes, ...rest }) => {
   const handlePageChange = (event, newPage) => {
     setPage(newPage);
   };
+
+  const handleConfirm = async (id) => {
+    setPacientId(id);
+    chilRefAlert.current.handleClickOpen();
+  }
 
   const handleDelete = async (id) => {
     await api.delete('/paciente/' + id);
@@ -105,7 +113,10 @@ const Results = ({ className, pacients, onEdit, getPacientes, ...rest }) => {
                   <TableCell>{pacient.email}</TableCell>
                   <TableCell  align="right" width="30%">
                     <IconButton onClick={() => onEdit(pacient)}><EditIcon color="primary" /></IconButton>|
-                    <IconButton onClick={() => handleDelete(pacient.id)}><DeleteIcon color="secondary"/></IconButton>
+                    <IconButton 
+                      onClick={() => handleConfirm(pacient.id)} >
+                        <DeleteIcon color="secondary"/>
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -122,6 +133,7 @@ const Results = ({ className, pacients, onEdit, getPacientes, ...rest }) => {
         rowsPerPageOptions={[5, 10, 25]} />
     </Card>
     <MessageDiaglog ref={childRef} />
+    <AlertDialog ref={chilRefAlert} handleConfirm={() => handleDelete(pacientId)} />
     </>
   );
 };
