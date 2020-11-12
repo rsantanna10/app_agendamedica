@@ -48,6 +48,17 @@ const ProfileDetails = forwardRef(({ className, getPacientes, ...rest }, ref) =>
     });
   };
 
+  const handleChangeOnlyNumber = (event) => {
+    const re = /^[0-9\b]+$/;
+
+    if (event.target.value === '' || re.test(event.target.value)) {
+      setValues({
+        ...values,
+        [event.target.name]: event.target.value
+      });
+    }
+  };
+
   const onSubmit = async () => {
 
     values.dataNascimento = values.dataNascimento === '' ? null : values.dataNascimento;
@@ -90,7 +101,7 @@ const ProfileDetails = forwardRef(({ className, getPacientes, ...rest }, ref) =>
         <CardContent>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="CPF" name="cpf" onChange={handleChange} required value={values.cpf} variant="outlined" />
+              <TextField fullWidth label="CPF" name="cpf" onChange={handleChangeOnlyNumber} required value={values.cpf} variant="outlined" />
             </Grid>            
           </Grid>
           <Grid container spacing={3}>
@@ -131,7 +142,7 @@ const ProfileDetails = forwardRef(({ className, getPacientes, ...rest }, ref) =>
           </Grid>
           <Grid container spacing={3}>
             <Grid item md={12} xs={12} >
-              <TextField fullWidth label="Celular" name="telefone" value={values.telefone} onChange={handleChange}  required variant="outlined" />
+              <TextField fullWidth label="Celular" name="telefone" value={values.telefone} onChange={handleChangeOnlyNumber}  required variant="outlined" />
             </Grid>            
           </Grid>
         </CardContent>

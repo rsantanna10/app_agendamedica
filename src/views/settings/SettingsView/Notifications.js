@@ -106,9 +106,9 @@ const Notifications = ({ className, ...rest }) => {
                Horário de atendimento
               </Typography>
               <Box component="div" display="inline">
-                <TextField md={6} label="Início" name="horaInicio" type="text"  value={values.horaInicio} required variant="outlined"  onChange={handleChange}InputLabelProps={{ shrink: true }} />
+                <TextField type="time" md={6} label="Início" name="horaInicio"  value={values.horaInicio} required variant="outlined"  onChange={handleChange}InputLabelProps={{ shrink: true }} />
                 {' '}
-                <TextField md={6} label="Fim" name="horaFim" type="text" value={values.horaFim} required variant="outlined" onChange={handleChange} InputLabelProps={{ shrink: true }} />
+                <TextField type="time" md={6} label="Fim" name="horaFim" value={values.horaFim} required variant="outlined" onChange={handleChange} InputLabelProps={{ shrink: true }} />
               </Box>
               <br />
               <Grid item md={3} xs={12} >

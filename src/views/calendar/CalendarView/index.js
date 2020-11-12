@@ -394,32 +394,97 @@ class Calendar extends React.PureComponent {
   componentDidUpdate() {
     this.appointmentForm.update();    
   }
+
+  
+
+  
   async componentDidMount() {
     const usuario = jwt_decode(localStorage.getItem('app_token'));
-    
-    await api.get(`/evento/${usuario.id}`).then(response =>  this.setState({
-                                                data: response.data.map(appointment => (
-                                                  { 
-                                                    ...appointment, 
-                                                    title: appointment.nome.split(' ').length > 1 ?  appointment.nome.split(' ')[0] + ' ' + appointment.nome.split(' ')[1] :  
-                                                                                                     appointment.nome.split(' ')[0] ,
-                                                    paciente: appointment.nome, 
-                                                    tipoProcedimento: appointment.tipoEventoId === 1 ? 'Agendamento' : 
-                                                                      appointment.tipoEventoId === 2 ? 'Reagendamento' : 
-                                                                      appointment.tipoEventoId === 3 ? 'Revisão' : '',
-                                                    startDate: appointment.dataInicioAtendimento, 
-                                                    endDate: appointment.dataFimAtendimento,
-                                                    tipoConsultaId: appointment.tipoEventoId })) }));    
-    
-    const result = await api.get(`/configuracao/usuario/${usuario.id}`);
 
-    if(result.data.length > 0) {
-      let data = result.data[0];
-      this.setState({ startDayHour: parseInt(data.horaInicio.split(':')[0]),
-                      endDayHour: parseInt(data.horaFim.split(':')[0]),
-                      interval: parseInt(data.intervalo)});
-                      
+    const getLastDate = (startDate, weeksBack) => {
+      var d = new Date(startDate); // duplicate start date
+      d.setDate( d.getDate() - d.getDay() + weeksBack); // move to week day
+      return new Date(d);
     }
+
+   const formatDate = (date) => {
+      var d = new Date(date),
+          month = '' + (d.getMonth() + 1),
+          day = '' + d.getDate(),
+          year = d.getFullYear();
+  
+      if (month.length < 2) 
+          month = '0' + month;
+      if (day.length < 2) 
+          day = '0' + day;
+  
+      return [year, month, day].join('-');
+  };
+
+  const returnDayBlock = (beginHour, endHour, weekDay)  => {
+    return {
+      title: 'Horário Bloqueado',
+      startDate: getLastDate(new Date(formatDate(this.state.currentDate) + ' ' + beginHour + ':00'), weekDay),
+      endDate: getLastDate(new Date(formatDate(this.state.currentDate) + ' ' + endHour + ':00'), weekDay),
+      tipoEventoId: 4
+    };
+  };
+
+  
+  let usuarioConfig;
+  const result = await api.get(`/configuracao/usuario/${usuario.id}`);
+
+  if(result.data.length > 0) {
+      usuarioConfig = result.data[0];
+      this.setState({ startDayHour: parseInt(usuarioConfig.horaInicio.split(':')[0]),
+                      endDayHour: parseInt(usuarioConfig.horaFim.split(':')[0]),
+                      interval: parseInt(usuarioConfig.intervalo)});
+  }
+    
+  await api.get(`/evento/${usuario.id}`).then(response =>  { 
+      let data = response.data.map(appointment => ( { 
+        ...appointment, 
+        title: appointment.nome.split(' ').length > 1 ?  appointment.nome.split(' ')[0] + ' ' + appointment.nome.split(' ')[1] :  
+                                                         appointment.nome.split(' ')[0] ,
+        paciente: appointment.nome, 
+        tipoProcedimento: appointment.tipoEventoId === 1 ? 'Agendamento' : 
+                          appointment.tipoEventoId === 2 ? 'Reagendamento' : 
+                          appointment.tipoEventoId === 3 ? 'Revisão' : '',
+        startDate: appointment.dataInicioAtendimento, 
+        endDate: appointment.dataFimAtendimento,
+        tipoConsultaId: appointment.tipoEventoId }));      
+
+      //Adicionando hrários bloqueados
+      if (!usuarioConfig.domingo) {
+          data.push(returnDayBlock(usuarioConfig.horaInicio, usuarioConfig.horaFim, 0));
+      }
+
+      if (!usuarioConfig.segunda) {
+        data.push(returnDayBlock(usuarioConfig.horaInicio, usuarioConfig.horaFim, 1));
+      }
+
+      if (!usuarioConfig.terca) {
+        data.push(returnDayBlock(usuarioConfig.horaInicio, usuarioConfig.horaFim, 2));
+      }
+
+      if (!usuarioConfig.quarta) {
+        data.push(returnDayBlock(usuarioConfig.horaInicio, usuarioConfig.horaFim, 3));
+      }
+
+      if (!usuarioConfig.quinta) {
+        data.push(returnDayBlock(usuarioConfig.horaInicio, usuarioConfig.horaFim, 4));
+      }
+
+      if (!usuarioConfig.sexta) {
+        data.push(returnDayBlock(usuarioConfig.horaInicio, usuarioConfig.horaFim, 5));
+      }
+
+      if (!usuarioConfig.sabado) {
+        data.push(returnDayBlock(usuarioConfig.horaInicio, usuarioConfig.horaFim, 6));
+      }
+
+      this.setState({ data });
+    });
   }
 
   onEditingAppointmentChange(editingAppointment) {
